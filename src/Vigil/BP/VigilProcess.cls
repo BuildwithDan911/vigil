@@ -8,8 +8,15 @@ Method OnRequest(pRequest As Ens.StringRequest, Output pResponse As Ens.StringRe
     Set pResponse = ##class(Ens.StringResponse).%New()
     
     Try {
-        // StringValue format: accession|patientId (for results) OR referral|patientId (for referrals)
         Set rawInput = pRequest.StringValue
+        
+        // Check if referral message
+        If $Extract(rawInput, 1, 9) = "REFERRAL|" {
+            Set sc = ..ProcessReferral(rawInput, .pResponse)
+            Quit
+        }
+        
+        // Otherwise handle lab results: accession|patientId
         Set token1 = $Piece(rawInput, "|", 1)
         Set patientId = $Piece(rawInput, "|", 2)
         
@@ -104,6 +111,59 @@ Method OnRequest(pRequest As Ens.StringRequest, Output pResponse As Ens.StringRe
         Set loop.Deadline = $ZDateTime($H + (hours/24), 3)
         
         // Save Loop
+        Set sc = loop.%Save()
+        Set pResponse.StringValue = "OPENED:" _ loop.LoopId
+        
+    } Catch ex {
+        Set sc = ex.AsStatus()
+    }
+    Quit sc
+}
+
+/// Evaluates Referral event
+Method ProcessReferral(rawInput As %String, ByRef pResponse As Ens.StringResponse) As %Status
+{
+    Set sc = $$$OK
+    Try {
+        Set patientId = $Piece(rawInput, "|", 2)
+        Set refJson = $Piece(rawInput, "|", 3, *)
+        Set ref = {}.%FromJSON(refJson)
+        
+        If ref.bookingStatus = "booked" {
+            Set pResponse.StringValue = "SKIP:already_booked"
+            Quit
+        }
+        
+        Set loopId = "VGL-REF-" _ $Extract($ZCRC(patientId_ref.referralId, 7), 1, 6)
+        
+        // Deduplication
+        Set existing = ##class(Vigil.Data.Loop).IdxDedupeOpen("referral_leakage", patientId, ref.referralId)
+        If $IsObject(existing) {
+            Set pResponse.StringValue = "DEDUPE:" _ existing.LoopId
+            Quit
+        }
+        
+        Set loop = ##class(Vigil.Data.Loop).%New()
+        Set loop.LoopId = loopId
+        Set loop.Type = "referral_leakage"
+        Set loop.PatientId = patientId
+        Set loop.AccessionOrReferralId = ref.referralId
+        Set loop.Urgency = "urgent"
+        Set loop.FloorLevel = "urgent"
+        Set loop.Score = 7
+        Set loop.State = "Opened"
+        Set loop.Owner = "dr.mensah"
+        Set loop.Reason = "Referral leakage: Unbooked consultation for " _ ref.specialty _ " at " _ ref.referredTo
+        Set loop.DecisionSource = "rules"
+        Set loop.CreatedAt = $ZDateTime($Horolog, 3)
+        Set loop.Deadline = $ZDateTime($H + (8/24), 3) // 8 hours SLA for urgent referral chase
+        
+        If ref.share_results_sms = 0 {
+            Set loop.ConsentStatus = "hold"
+        } Else {
+            Set loop.ConsentStatus = "send"
+        }
+        
         Set sc = loop.%Save()
         Set pResponse.StringValue = "OPENED:" _ loop.LoopId
         
