@@ -1,8 +1,3 @@
 [Actions]
-CreateNamespace=IRISAPP,Interop=1
-
-[Startup]
-SystemMode=AI Hub EAP
-
-[Security]
-PasswordHashAlgorithm=2
+CreateDatabase:Name=IRISAPP,Directory=/usr/irissys/mgr/IRISAPP
+CreateNamespace:Name=IRISAPP,Globals=IRISAPP,Routines=IRISAPP,Interop=1

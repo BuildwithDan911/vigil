@@ -8,25 +8,28 @@ ClassMethod Run() As %Status
     Write !, "==> Initializing Vigil for IRIS for Health configuration..."
     
     Try {
-        // 1. Ensure interoperability credentials and roles
-        Do ##class(Security.Users).UnExpireUserPasswords("*")
-        
-        // 2. Configure CSP REST Web Application /vigil
+        // 1. Configure CSP REST Web Application /vigil
         Set namespace = $Namespace
         New $Namespace
         Set $Namespace = "%SYS"
         
+        Do ##class(Security.Users).UnExpireUserPasswords("*")
+        
         Set appPath = "/vigil"
+        Set props("AutheEnabled") = 96 // 32 (Unauthenticated) + 64 (Password)
+        Set props("MatchRoles") = ":%All"
+        Set props("NameSpace") = namespace
+        Set props("DispatchClass") = "Vigil.Web.Dispatcher"
+        Set props("IsNameSpaceDefault") = 0
         If '##class(Security.Applications).Exists(appPath) {
-            Set props("Authe") = 32 // Unauthenticated for demo convenience
-            Set props("NameSpace") = namespace
-            Set props("DispatchClass") = "Vigil.Web.Dispatcher"
-            Set props("IsNameSpaceDefault") = 0
             Set sc = ##class(Security.Applications).Create(appPath, .props)
             Write !, "  -> Created REST Web Application: ", appPath
+        } Else {
+            Set sc = ##class(Security.Applications).Modify(appPath, .props)
+            Write !, "  -> Updated REST Web Application: ", appPath
         }
         
-        // 3. Compile Production
+        // 2. Compile Production
         Set $Namespace = namespace
         Do $System.OBJ.Compile("Vigil.Production", "ck")
         Write !, "  -> Vigil production compiled successfully."

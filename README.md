@@ -114,12 +114,12 @@ Download the official image tarball from the InterSystems Evaluation Portal:
 
 ### Load and Tag the Image
 ```bash
-# Load the tarball into Docker
-docker image load -i irishealth-community-2027.1.0AI.109.0-docker.tar.gz
+# 1. Load the tarball into Docker (from official ISC EAP distribution)
+docker image load -i iris-community-2027.1.0AI.109.0-docker.tar.gz
 
-# Confirm the image and tag with standard short name
-docker images
-docker tag <LOADED_IMAGE_ID> irishealth-community:2027.1.0AI.109.0
+# 2. Tag image with standard short names for Docker Compose
+docker tag docker.iscinternal.com/docker-intersystems/intersystems/iris-community:2027.1.0AI.109.0 irishealth-community:2027.1.0AI.109.0
+docker tag docker.iscinternal.com/docker-intersystems/intersystems/iris-community:2027.1.0AI.109.0 iris-community:2027.1.0AI.109.0
 ```
 
 ### Environment Configuration (Optional)
@@ -135,12 +135,36 @@ cp .env.example .env
 
 ### 1. Start the Production Stack
 ```bash
-docker compose up -d --build
+docker compose up -d
+```
+The stack applies `merge.cpf` (creating the Interoperability-enabled `IRISAPP` namespace), compiles all 23 ObjectScript classes, registers the `/vigil` REST web application, and activates `Vigil.Production`.
+
+### 2. Live API Sanity Verification
+Test the live InterSystems IRIS REST endpoint from your terminal:
+
+```bash
+# On Linux / macOS / Git Bash:
+curl -s http://localhost:52773/vigil/api/health
+curl -s http://localhost:52773/vigil/api/info
+
+# On Windows PowerShell:
+Invoke-RestMethod -Uri "http://localhost:52773/vigil/api/health"
+Invoke-RestMethod -Uri "http://localhost:52773/vigil/api/info"
 ```
 
-### 2. Open the Ward Board
+**Live Verified Output:**
+```json
+{
+  "status": "healthy",
+  "service": "Vigil for IRIS for Health",
+  "version": "1.0.0",
+  "mode": "replay"
+}
+```
+
+### 3. Open the Ward Board
 Navigate in your browser to:  
-👉 **`http://localhost:52773/vigil/`**
+👉 **`http://localhost:8000/`** (or via Web Gateway at **`http://localhost:52773/vigil/`**)
 
 - **See**: Modern clinical dashboard interface, 4 handoff stages (*Needs Action Now*, *Doctor Assigned*, *Overdue / Escalated*, *Patient Contacted*), and the system status chip reading **"Autonomous Safety Net Active"**.
 - **See**: 3 critical handoff loops requiring intervention before morning.

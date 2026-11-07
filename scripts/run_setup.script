@@ -1,0 +1,5 @@
+zn "IRISAPP"
+do $System.OBJ.Load("/home/irisowner/dev/src/Vigil/Setup.cls", "ck")
+set sc = ##class(Vigil.Setup).Run()
+write "Vigil.Setup result: ", sc, !
+halt

@@ -1,0 +1,4 @@
+zn "IRISAPP"
+set sc = ##class(Ens.Director).StartProduction("Vigil.Production")
+write "StartProduction Result: ", sc, !
+halt

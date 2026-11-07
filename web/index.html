@@ -21,15 +21,15 @@
       </div>
     </div>
 
-    <!-- Environment Switcher (Evaluation Dataset vs Live Workspace) -->
+    <!-- Environment Switcher (Demo Cases vs Custom Input) -->
     <div class="env-selector" role="tablist" aria-label="Environment Mode">
       <button class="env-tab active" id="envBtnDemo" onclick="setEnvironment('demo')">
         <span class="env-dot demo"></span>
-        <span>Evaluation Dataset</span>
+        <span>Demo Patient Cases</span>
       </button>
       <button class="env-tab" id="envBtnLive" onclick="setEnvironment('live')">
         <span class="env-dot live"></span>
-        <span>Live Workspace</span>
+        <span>Custom Patient Input</span>
       </button>
     </div>
 
@@ -53,27 +53,27 @@
   <!-- Navigation Sub-Bar (Linear Style) -->
   <div class="nav-subbar">
     <nav class="main-nav" aria-label="Main Views">
-      <button class="nav-item active" onclick="switchTab('board')">Diagnostic Queue</button>
-      <button class="nav-item" onclick="switchTab('nightshift')">Night Shift Replay</button>
+      <button class="nav-item active" onclick="switchTab('board')">Active Alerts</button>
+      <button class="nav-item" onclick="switchTab('nightshift')">24h Shift Replay</button>
       <button class="nav-item" onclick="switchTab('ledger')">Safety Audit Log</button>
-      <button class="nav-item" onclick="switchTab('consent')">Privacy Controls</button>
+      <button class="nav-item" onclick="switchTab('consent')">Privacy &amp; Consent</button>
     </nav>
 
     <div class="nav-actions">
       <button class="btn btn-primary" onclick="openNewHandoffModal()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        New Patient Handoff
+        Add Patient Alert
       </button>
-      <button class="btn btn-outline" onclick="injectChaosEmergency()" title="Simulate live off-shift emergency lab arrival (Shortcut: E)">
+      <button class="btn btn-outline" onclick="injectChaosEmergency()" title="Simulate an emergency lab arriving after doctor left (Shortcut: E)">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        Simulate Inbound Lab
+        Simulate Emergency Arrival
       </button>
       <button class="btn btn-secondary-shield" onclick="openAdversarialModal()" title="Safety Stress Test (Shortcut: T)">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         Test Safety Guard
       </button>
       <span class="kbd-hint" title="Hotkeys: 1-4 for views, N for new handoff, E for emergency lab, Esc to close dialogs">
-        <kbd>1-4</kbd> Views &bull; <kbd>N</kbd> New &bull; <kbd>E</kbd> Chaos &bull; <kbd>Esc</kbd>
+        <kbd>1-4</kbd> Views &bull; <kbd>N</kbd> New &bull; <kbd>E</kbd> Emergency &bull; <kbd>Esc</kbd>
       </span>
     </div>
   </div>
@@ -96,34 +96,34 @@
          ====================================================================== -->
     <section id="tab-board" class="tab-pane active">
       
-      <!-- Clinical Triage Status & Operational Summary (Medplum Pattern) -->
+      <!-- Clinical Summary Bar -->
       <div class="clinical-summary-bar">
         <div class="summary-filters">
           <button class="summary-tab active" id="summaryTabAll" onclick="setLoopTypeFilter('all')">
-            <span>All Active Cases</span>
+            <span>All Active Alerts</span>
             <span class="summary-badge" id="metricTotalCount">5</span>
           </button>
           <button class="summary-tab" id="summaryTabAction">
-            <span>Needs Action</span>
+            <span>Needs Attention</span>
             <span class="summary-badge badge-critical" id="metricCriticalCount">2</span>
           </button>
           <button class="summary-tab" id="summaryTabAssigned">
-            <span>Doctor Assigned</span>
+            <span>Doctor Calling</span>
             <span class="summary-badge badge-warning" id="metricOwnedCount">1</span>
           </button>
           <button class="summary-tab" id="summaryTabEscalated">
-            <span>Escalated</span>
+            <span>Overdue (Escalated)</span>
             <span class="summary-badge badge-escalated" id="metricEscalatedCount">1</span>
           </button>
           <button class="summary-tab" id="summaryTabResolved">
-            <span>Contacted</span>
+            <span>Resolved</span>
             <span class="summary-badge badge-safe" id="metricActedCount">0</span>
           </button>
         </div>
 
         <div class="summary-facility-meta">
           <span class="facility-status-dot"></span>
-          <span>InterSystems IRIS for Health &bull; FHIR Gateway Active &bull; Night Shift Lead: Dr. Mensah</span>
+          <span>Harbourview General &bull; Night Shift Lead: Dr. Mensah &bull; Safety Net Active</span>
         </div>
       </div>
 
@@ -166,18 +166,18 @@
           <div class="section-head">
             <div class="section-title-wrap">
               <span class="status-dot dot-critical"></span>
-              <span>Action Required — Discharging Physician Off-Duty</span>
+              <span>1. Immediate Attention (Doctor Left for the Day)</span>
               <span class="counter-tag" id="countOpened">2</span>
             </div>
-            <span style="font-size: 11px; color: var(--text-light);">Discharging doctor off-shift; unassigned handoff</span>
+            <span style="font-size: 11px; color: var(--text-muted);">Urgent lab results arrived after the doctor went home &bull; Needs on-duty doctor pickup</span>
           </div>
           <div class="table-header-row">
-            <div class="col-acuity">ACUITY</div>
-            <div class="col-patient">PATIENT / MRN</div>
-            <div class="col-finding">DIAGNOSTIC FINDING</div>
-            <div class="col-reason">SAFETY CONTEXT</div>
-            <div class="col-doctor">COVERING DOCTOR</div>
-            <div class="col-sla">SLA TARGET</div>
+            <div class="col-acuity">URGENCY</div>
+            <div class="col-patient">PATIENT</div>
+            <div class="col-finding">TEST &amp; RESULT</div>
+            <div class="col-reason">WHY IT'S URGENT</div>
+            <div class="col-doctor">ASSIGNED DOCTOR</div>
+            <div class="col-sla">TIME LEFT</div>
             <div class="col-action">ACTION</div>
           </div>
           <div class="cards-stream" id="cardsOpened">
@@ -190,18 +190,18 @@
           <div class="section-head">
             <div class="section-title-wrap">
               <span class="status-dot dot-warning"></span>
-              <span>Doctor Assigned (In Progress)</span>
+              <span>2. Doctor Assigned &amp; Calling</span>
               <span class="counter-tag" id="countOwned">1</span>
             </div>
-            <span style="font-size: 11px; color: var(--text-light);">Accepted by on-duty covering clinician</span>
+            <span style="font-size: 11px; color: var(--text-muted);">An on-duty doctor has claimed this patient and is reaching out</span>
           </div>
           <div class="table-header-row">
-            <div class="col-acuity">ACUITY</div>
-            <div class="col-patient">PATIENT / MRN</div>
-            <div class="col-finding">DIAGNOSTIC FINDING</div>
-            <div class="col-reason">SAFETY CONTEXT</div>
-            <div class="col-doctor">COVERING DOCTOR</div>
-            <div class="col-sla">SLA TARGET</div>
+            <div class="col-acuity">URGENCY</div>
+            <div class="col-patient">PATIENT</div>
+            <div class="col-finding">TEST &amp; RESULT</div>
+            <div class="col-reason">WHY IT'S URGENT</div>
+            <div class="col-doctor">ASSIGNED DOCTOR</div>
+            <div class="col-sla">TIME LEFT</div>
             <div class="col-action">ACTION</div>
           </div>
           <div class="cards-stream" id="cardsOwned">
@@ -214,18 +214,18 @@
           <div class="section-head">
             <div class="section-title-wrap">
               <span class="status-dot dot-escalated"></span>
-              <span>Overdue / Escalated</span>
+              <span>3. Overdue (Escalated to Department Head)</span>
               <span class="counter-tag" id="countEscalated">1</span>
             </div>
-            <span style="font-size: 11px; color: var(--text-light);">SLA target expired; escalated to Department Head</span>
+            <span style="font-size: 11px; color: var(--text-muted);">No response before the deadline &bull; Automatically sent to senior leadership</span>
           </div>
           <div class="table-header-row">
-            <div class="col-acuity">ACUITY</div>
-            <div class="col-patient">PATIENT / MRN</div>
-            <div class="col-finding">DIAGNOSTIC FINDING</div>
-            <div class="col-reason">SAFETY CONTEXT</div>
-            <div class="col-doctor">COVERING DOCTOR</div>
-            <div class="col-sla">SLA TARGET</div>
+            <div class="col-acuity">URGENCY</div>
+            <div class="col-patient">PATIENT</div>
+            <div class="col-finding">TEST &amp; RESULT</div>
+            <div class="col-reason">WHY IT'S URGENT</div>
+            <div class="col-doctor">ASSIGNED DOCTOR</div>
+            <div class="col-sla">TIME LEFT</div>
             <div class="col-action">ACTION</div>
           </div>
           <div class="cards-stream" id="cardsEscalated">
@@ -238,18 +238,18 @@
           <div class="section-head">
             <div class="section-title-wrap">
               <span class="status-dot dot-safe"></span>
-              <span>Patient Contact Confirmed</span>
+              <span>4. Patient Contacted (Issue Resolved)</span>
               <span class="counter-tag" id="countActed">0</span>
             </div>
-            <span style="font-size: 11px; color: var(--text-light);">Handoff closed and cryptographically sealed</span>
+            <span style="font-size: 11px; color: var(--text-muted);">Doctor confirmed patient or carer was contacted &bull; Safety net verified</span>
           </div>
           <div class="table-header-row">
-            <div class="col-acuity">ACUITY</div>
-            <div class="col-patient">PATIENT / MRN</div>
-            <div class="col-finding">DIAGNOSTIC FINDING</div>
-            <div class="col-reason">SAFETY CONTEXT</div>
-            <div class="col-doctor">COVERING DOCTOR</div>
-            <div class="col-sla">SLA TARGET</div>
+            <div class="col-acuity">URGENCY</div>
+            <div class="col-patient">PATIENT</div>
+            <div class="col-finding">TEST &amp; RESULT</div>
+            <div class="col-reason">WHY IT'S URGENT</div>
+            <div class="col-doctor">ASSIGNED DOCTOR</div>
+            <div class="col-sla">TIME LEFT</div>
             <div class="col-action">ACTION</div>
           </div>
           <div class="cards-stream" id="cardsActed">

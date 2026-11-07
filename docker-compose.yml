@@ -1,10 +1,6 @@
 services:
   vigil:
-    build:
-      context: .
-      args:
-        IMAGE: ${IMAGE:-irishealth-community:2027.1.0AI.109.0}
-    image: vigil:latest
+    image: ${IMAGE:-irishealth-community:2027.1.0AI.109.0}
     container_name: vigil-iris
     restart: unless-stopped
     ports:
@@ -17,9 +13,10 @@ services:
       - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
     volumes:
       - ./:/home/irisowner/dev
+    command: ["-a", "iris session IRIS < /home/irisowner/dev/iris.script"]
     healthcheck:
       test: ["CMD-SHELL", "iris session IRIS -U IRISAPP '##class(Vigil.Setup).HealthCheck()' || exit 0"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 15s
+      start_period: 25s

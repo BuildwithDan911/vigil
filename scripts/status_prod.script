@@ -1,0 +1,5 @@
+zn "IRISAPP"
+write "Production Running: ", ##class(Ens.Director).IsProductionRunning(), !
+set sc = ##class(Ens.Director).GetProductionStatus(.pName, .pState)
+write "Production Name: ", pName, " | State: ", pState, !
+halt

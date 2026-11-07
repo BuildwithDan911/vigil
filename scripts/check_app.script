@@ -1,0 +1,4 @@
+zn "%SYS"
+set sc = ##class(Security.Applications).Get("/vigil", .p)
+zw p
+halt
