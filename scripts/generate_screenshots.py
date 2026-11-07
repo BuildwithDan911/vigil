@@ -327,8 +327,8 @@ def create_report_1440():
     draw.text((80, 430), "Documented that >40% of abnormal results returned post-discharge lack timely clinician awareness.", fill=INK_MUTED)
     draw.text((60, 465), "• Dalal et al., Notification Trials (PMC3994865):", fill=INK_COLOR)
     draw.text((80, 490), "Demonstrated that passive alerts fail without active escalation timers and clear handoff ownership.", fill=INK_MUTED)
-    draw.text((60, 525), "• Aligned with the WHO Global Patient Safety Action Plan 2021-2030 (Strategic Objective 4: Patient and Family Engagement).", fill=INK_COLOR)
-    draw.text((80, 550), "Note: Vigil is not commissioned, certified, or endorsed by the World Health Organization.", fill=INK_MUTED)
+    draw.text((60, 525), "• Aligned with international patient safety closed-loop communication standards.", fill=INK_COLOR)
+    draw.text((80, 550), "Note: Designed for demonstration of clinical handoff and escalation safeguards.", fill=INK_MUTED)
 
     img.save(OUT_DIR / "report-1440.png")
 
@@ -368,8 +368,8 @@ def create_report_375():
     draw.text((24, 412), "  >40% results post-discharge missed.", fill=INK_MUTED)
     draw.text((24, 445), "• Dalal et al. (PMC3994865):", fill=INK_COLOR)
     draw.text((24, 467), "  Passive alerts fail without timers.", fill=INK_MUTED)
-    draw.text((24, 500), "• WHO Action Plan 2021-2030:", fill=INK_COLOR)
-    draw.text((24, 522), "  Design standard (not endorsed).", fill=INK_MUTED)
+    draw.text((24, 500), "• Clinical Handoff Protocols:", fill=INK_COLOR)
+    draw.text((24, 522), "  Active escalation & SLA verification.", fill=INK_MUTED)
 
     img.save(OUT_DIR / "report-375.png")
 

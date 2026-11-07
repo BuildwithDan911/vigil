@@ -18,7 +18,7 @@ All items below have been audited and verified against `kit/specs/design-system.
 
 ## 2. Mandatory Disclaimers
 - [x] Persistent synthetic data disclaimer displayed across top banner and footer:
-  > *"Synthetic Harbourview General Hospital data — demonstration environment only. Not a medical device; not for use on real patients. Framing aligns with patient-safety communication standards inspired by the WHO Global Patient Safety Action Plan 2021–2030 (Design Standard Only; Not a WHO commission, certification, or endorsement)."*
+  > *"Synthetic Harbourview General Hospital data — demonstration environment only. Not a medical device; not for use on real patients. Framing aligns with patient-safety communication standards and human-centered clinical escalation."*
 - [x] Replay mode indicator clearly distinguished: *"Recorded Replay — No Live AI Calls"*.
 
 ## 3. Responsive Screen Layouts & Screenshots

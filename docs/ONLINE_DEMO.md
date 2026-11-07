@@ -88,4 +88,4 @@ Use `certbot --nginx -d vigil.yourdomain.org` to generate free Let's Encrypt SSL
 ---
 
 ## 6. Synthetic Data Disclaimer
-Synthetic Harbourview General Hospital data — demonstration environment only. Not a medical device; not for real patients. Design standard informed by the WHO Global Patient Safety Action Plan 2021–2030 (Design Standard Only; Not a WHO commission, certification, or endorsement).
+Synthetic Harbourview General Hospital data — demonstration environment only. Not a medical device; not for real patients. Design standard informed by clinical patient-safety closed-loop communication guidelines.

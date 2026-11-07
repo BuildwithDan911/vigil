@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/InterSystems-IRIS%20for%20Health%202027.1.0AI.109.0-0B4F6C)](https://evaluation.intersystems.com/Eval/early-access/AIHub)
 [![Ideas Portal](https://img.shields.io/badge/Community%20Idea-DPI--I--689-0F6E56)](https://ideas.intersystems.com/ideas/DPI-I-689)
-[![Design Standard](https://img.shields.io/badge/Design%20Standard-WHO%20Patient%20Safety%20Action%20Plan%202021--2030-854D0E)](#disclaimers)
+[![Design Standard](https://img.shields.io/badge/Design%20Standard-Clinical%20Safety%20Handoff%20Protocols-0D9488)](#disclaimers)
 
 ---
 
@@ -142,7 +142,7 @@ docker compose up -d --build
 Navigate in your browser to:  
 👉 **`http://localhost:52773/vigil/`**
 
-- **See**: The WHO-aligned clinical paper palette (`#F4F1EA` paper, `#15233B` dark navy ink), 4 triage lanes (*Opened*, *Owned*, *Escalated*, *Acted*), and the mode chip reading **"Recorded Replay — No Live AI Calls"**.
+- **See**: Modern clinical dashboard interface, 4 handoff stages (*Needs Action Now*, *Doctor Assigned*, *Overdue / Escalated*, *Patient Contacted*), and the system status chip reading **"Autonomous Safety Net Active"**.
 - **See**: 3 critical handoff loops requiring intervention before morning.
 
 ### 3. Start the 90-Second Night Shift Replay
@@ -223,7 +223,7 @@ The module descriptor (`module.xml`) defines dependencies and invokes `Vigil.Set
 
 1. **Synthetic Data**: All patient names, medical record numbers, encounter identifiers, lab observations, and clinician IDs are entirely synthetic and generated for demonstration purposes. Any resemblance to real persons is purely coincidental.
 2. **Not a Medical Device**: Vigil is a software demonstration prototype built for the InterSystems Programming Contest. It is not certified as a medical device and must never be used for actual clinical patient management.
-3. **Design Standard Framing**: The visual layout and communication principles in Vigil are inspired by the goals of the *World Health Organization (WHO) Global Patient Safety Action Plan 2021–2030* (Strategic Objective 4: Patient and Family Engagement). **Vigil is not commissioned, certified, or endorsed by the World Health Organization.**
+3. **Clinical Safety Framing**: The visual layout and communication principles in Vigil are designed around patient-safety closed-loop communication standards and human-centered clinical escalation.
 4. **Academic Citations**:
    - *Roy CL et al.*, "Patient safety issues in outpatient follow-up of laboratory results." *Annals of Internal Medicine*, 2005. [DOI: 10.7326/0003-4819-143-2-200507190-00011](https://www.acpjournals.org/doi/10.7326/0003-4819-143-2-200507190-00011)
    - *Dalal et al.*, "Provider notification and action tracking." *Journal of Patient Safety*, [PMC3994865](https://pmc.ncbi.nlm.nih.gov/articles/PMC3994865/).

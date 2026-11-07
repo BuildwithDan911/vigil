@@ -59,7 +59,7 @@ ClassMethod Info() As %Status
         "contest": "InterSystems Programming Contest: AI Agents in Interoperability Workflows",
         "idea": "DPI-I-689",
         "author": "Daniel John (BuildwithDan911)",
-        "design_standard": "WHO Global Patient Safety Action Plan 2021-2030 (Design Standard Only; Not Endorsed)",
+        "design_standard": "Clinical Safety Handoff and Escalation Guidelines",
         "disclaimer": "Synthetic Harbourview General clinical data only; not a medical device; not for real patients."
     }
     Write info.%ToJSON()

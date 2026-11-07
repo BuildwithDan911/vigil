@@ -1,6 +1,6 @@
 /**
  * Vigil for IRIS for Health - Clinical Patient-Safety Handoff Engine
- * Web Frontend Controller (WCAG 2.2 AA, WHO-aligned Paper Palette)
+ * Web Frontend Controller
  * (c) 2026 Daniel John <danielbasseyj@gmail.com> - MIT License
  */
 
@@ -20,7 +20,7 @@ const VigilState = {
   selectedLoopId: 'VGL-01-REEVE'
 };
 
-// Seeded Fallback / Replay Data
+// Seeded Fallback / Demonstration Data
 const SEEDED_LOOPS = [
   {
     loopId: 'VGL-01-REEVE',
@@ -35,16 +35,16 @@ const SEEDED_LOOPS = [
     originalOwner: 'dr.okonkwo',
     daysSinceDischarge: 1,
     testName: 'Potassium (Serum)',
-    testValue: '6.8 mmol/L (HH)',
+    testValue: '6.8 mmol/L (Critically High)',
     referenceRange: '3.5 - 5.0 mmol/L',
-    reason: 'Potassium 6.8 mmol/L (HH) 1 day after discharge. High vulnerability (age 78, lives alone). Primary owner off-shift.',
+    reason: 'Potassium 6.8 mmol/L 1 day after discharge. High vulnerability (age 78, lives alone). Discharging doctor went off-duty.',
     slaRemaining: '01h 48m',
-    ladder: ['dr.okonkwo (Off-shift)', 'dr.mensah (Night - Active)', 'dr.adewale (Head)'],
+    ladder: ['Dr. Okonkwo (Off-duty)', 'Dr. Mensah (On-duty)', 'Dr. Adewale (Clinical Director)'],
     consentStatus: 'send',
     ruleFloor: 'CRITICAL',
     modelRecommendation: 'CRITICAL',
     enforcedUrgency: 'CRITICAL',
-    decisionSource: 'rules_floor'
+    decisionSource: 'medical_safety_guard'
   },
   {
     loopId: 'VGL-REF-ONC',
@@ -52,23 +52,23 @@ const SEEDED_LOOPS = [
     patientName: 'Amina Diallo (82y)',
     ward: 'Oncology',
     type: 'referral_leakage',
-    typeName: 'Referral Leakage',
+    typeName: 'Overdue Specialist Referral',
     urgency: 'urgent',
     state: 'Opened',
     owner: 'dr.mensah',
     originalOwner: 'dr.okonkwo',
     daysSinceDischarge: 3,
-    testName: 'Outbound Referral',
+    testName: 'Specialist Referral',
     testValue: 'Oncology Consultation',
-    referenceRange: 'SLA: 48h',
-    reason: 'Outbound oncology referral unbooked for 55 hours (exceeds 48h SLA). Primary owner off-shift.',
+    referenceRange: 'Target SLA: 48h',
+    reason: 'Urgent cancer referral unbooked for 55 hours (exceeds 48-hour safety target). Discharging doctor off-duty.',
     slaRemaining: '06h 15m',
-    ladder: ['dr.mensah (Night - Active)', 'dr.adewale (Head)'],
+    ladder: ['Dr. Mensah (On-duty)', 'Dr. Adewale (Clinical Director)'],
     consentStatus: 'send',
     ruleFloor: 'URGENT',
     modelRecommendation: 'URGENT',
     enforcedUrgency: 'URGENT',
-    decisionSource: 'rules_floor'
+    decisionSource: 'medical_safety_guard'
   },
   {
     loopId: 'VGL-02-OKAI',
@@ -83,16 +83,16 @@ const SEEDED_LOOPS = [
     originalOwner: 'dr.mensah',
     daysSinceDischarge: 0,
     testName: 'Troponin I (High Sens)',
-    testValue: '2.4 ng/mL (HH)',
+    testValue: '2.4 ng/mL (High)',
     referenceRange: '< 0.04 ng/mL',
-    reason: 'Troponin I 2.4 ng/mL (HH) day of discharge. Owned by Dr. Mensah via Workflow inbox.',
+    reason: 'Troponin I 2.4 ng/mL day of discharge indicating cardiac injury. Dr. Mensah accepted case ownership.',
     slaRemaining: '03h 12m',
-    ladder: ['dr.mensah (Accepted Ownership)'],
+    ladder: ['Dr. Mensah (Accepted Case)'],
     consentStatus: 'send',
     ruleFloor: 'CRITICAL',
     modelRecommendation: 'CRITICAL',
     enforcedUrgency: 'CRITICAL',
-    decisionSource: 'ai_hub'
+    decisionSource: 'clinical_ai'
   },
   {
     loopId: 'VGL-15-CONTEH',
@@ -106,17 +106,17 @@ const SEEDED_LOOPS = [
     owner: 'dr.adewale',
     originalOwner: 'dr.okonkwo',
     daysSinceDischarge: 2,
-    testName: 'INR (Prothrombin)',
-    testValue: '5.2 (HH)',
+    testName: 'INR (Blood Clotting)',
+    testValue: '5.2 (Critically High)',
     referenceRange: '2.0 - 3.0',
-    reason: 'INR 5.2 (HH) 2 days after discharge. Unacknowledged past 2-hour SLA. Escalated to Clinical Head Dr. Adewale.',
+    reason: 'Blood thinning INR 5.2 2 days after discharge. Alert timed out without response; escalated to Clinical Director Dr. Adewale.',
     slaRemaining: 'OVERDUE (Escalated)',
-    ladder: ['dr.okonkwo (Timed out)', 'dr.mensah (Timed out)', 'dr.adewale (Clinical Head)'],
+    ladder: ['Dr. Okonkwo (Timed out)', 'Dr. Mensah (Timed out)', 'Dr. Adewale (Clinical Director)'],
     consentStatus: 'send',
     ruleFloor: 'CRITICAL',
     modelRecommendation: 'CRITICAL',
     enforcedUrgency: 'CRITICAL',
-    decisionSource: 'rules_floor'
+    decisionSource: 'medical_safety_guard'
   },
   {
     loopId: 'VGL-09-EZE',
@@ -124,7 +124,7 @@ const SEEDED_LOOPS = [
     patientName: 'Chika Eze (36y)',
     ward: '4W',
     type: 'results_after_discharge',
-    typeName: 'Sensitive Lab Result',
+    typeName: 'Sensitive Diagnostic Result',
     urgency: 'routine',
     state: 'Opened',
     owner: 'dr.mensah',
@@ -133,28 +133,28 @@ const SEEDED_LOOPS = [
     testName: 'HIV-1 RNA Viral Load',
     testValue: 'Detectable',
     referenceRange: 'Undetectable',
-    reason: 'Sensitive diagnostic result. Privacy Consent Policy: Redact test name from direct patient notifications.',
+    reason: 'Sensitive diagnostic result. Patient privacy policy: Diagnosis hidden from direct notifications.',
     slaRemaining: '22h 30m',
-    ladder: ['dr.mensah (Active)'],
+    ladder: ['Dr. Mensah (Active)'],
     consentStatus: 'redact',
     ruleFloor: 'ROUTINE',
     modelRecommendation: 'ROUTINE',
     enforcedUrgency: 'ROUTINE',
-    decisionSource: 'ai_hub'
+    decisionSource: 'clinical_ai'
   }
 ];
 
-// Multilingual Callback Scripts Catalog
+// Multilingual Patient Call Scripts Catalog
 const CALLBACK_SCRIPTS = {
   'VGL-01-REEVE': {
     en: {
-      text: "Hello, this is Harbourview General Hospital calling for Martha Reeve regarding a recent lab test. Please could Martha or their carer contact our clinical nurse coordinator on 0800-427-268 today.",
-      back: "Hello, this is Harbourview General Hospital calling for Martha Reeve regarding a recent lab test. Please phone us on 0800-427-268 today.",
+      text: "Hello, this is Harbourview General calling for Martha Reeve regarding a recent lab test. Please could Martha or their carer contact our clinical nurse coordinator on 0800-427-268 today.",
+      back: "Hello, this is Harbourview General calling for Martha Reeve regarding a recent lab test. Please contact our clinical nurse on 0800-427-268 today.",
       rtl: false
     },
     fr: {
       text: "Bonjour, ici l'Hôpital Général Harbourview pour Martha Reeve concernant un examen biologique récent. Merci de rappeler sans délai notre coordinateur au 0800-427-268 aujourd'hui.",
-      back: "Hello, this is Harbourview General Hospital for Martha Reeve regarding a recent lab test. Thank you for calling back our coordinator on 0800-427-268 today.",
+      back: "Hello, this is Harbourview General for Martha Reeve regarding a recent lab test. Thank you for calling back our coordinator on 0800-427-268 today.",
       rtl: false
     },
     ar: {
@@ -180,11 +180,11 @@ const CALLBACK_SCRIPTS = {
   }
 };
 
-// Cryptographic Ledger Mock
+// Patient Safety Audit Log Records
 let LedgerData = [
-  { seq: 1, time: '2026-11-04 19:14:00', loopId: 'VGL-01-REEVE', type: 'Opened', actor: 'rules_floor', prev: '0000000000000000000000000000000000000000000000000000000000000000', hash: '7f8a91c4b2e8d3a1f94c0b26e7a1d52849e7b2f153a79c4618e52a8b94f012de' },
-  { seq: 2, time: '2026-11-04 19:30:15', loopId: 'VGL-02-OKAI', type: 'Owned', actor: 'user:dr.mensah', prev: '7f8a91c4b2e8d3a1f94c0b26e7a1d52849e7b2f153a79c4618e52a8b94f012de', hash: '3c4e51f89a2b109c687e14a2f8c519d08e7a6b5c4d3e2f1098a7b6c5d4e3f2a1' },
-  { seq: 3, time: '2026-11-04 21:15:00', loopId: 'VGL-15-CONTEH', type: 'Escalated', actor: 'system:escalation_timer', prev: '3c4e51f89a2b109c687e14a2f8c519d08e7a6b5c4d3e2f1098a7b6c5d4e3f2a1', hash: 'a8b92d4ef0192ca718b95e0c4a7f21e90d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a' }
+  { seq: 1, time: '04 Nov 2026 19:14:00', patient: 'Martha Reeve (78y)', action: 'Critical Lab Alert Created & Assigned to On-Duty Clinician', actor: 'Vigil Medical Guard', hash: '7f8a91c4b2e8d3a1f94c0b26e7a1d52849e7b2f153a79c4618e52a8b94f012de' },
+  { seq: 2, time: '04 Nov 2026 19:30:15', patient: 'Samuel Okai (67y)', action: 'Case Ownership Accepted via Mobile Alert', actor: 'Dr. Mensah (On-Duty)', hash: '3c4e51f89a2b109c687e14a2f8c519d08e7a6b5c4d3e2f1098a7b6c5d4e3f2a1' },
+  { seq: 3, time: '04 Nov 2026 21:15:00', patient: 'Fatu Conteh (71y)', action: 'Response Window Expired — Auto-Escalated to Clinical Director', actor: 'Safety SLA Timer', hash: 'a8b92d4ef0192ca718b95e0c4a7f21e90d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a' }
 ];
 
 // Document Initialization
@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
   VigilState.loops = SEEDED_LOOPS;
   checkHealth();
   renderBoard();
-  initClock();
+  renderLedger();
 });
 
 // REST Health Check
@@ -207,11 +207,10 @@ function checkHealth() {
           ? 'Live Gemini AI Hub'
           : 'Recorded Replay — No Live AI Calls';
       }
-      // If server responded, attempt fetching live loops
       fetchLoops();
     })
     .catch(() => {
-      console.log('Using seeded client-side demonstration loops.');
+      console.log('Running in client-side demonstration mode.');
       renderBoard();
     });
 }
@@ -225,46 +224,28 @@ function fetchLoops() {
         renderBoard();
       }
     })
-    .catch(err => console.log('Could not load remote loops, keeping seeded set.'));
-}
-
-// Simulated Clock
-function initClock() {
-  const clockEl = document.getElementById('hospitalClock');
-  if (!clockEl) return;
-  setInterval(() => {
-    if (!VigilState.simPlaying) {
-      VigilState.simTimeMinutes = (VigilState.simTimeMinutes + 1) % 1440;
-      updateClockDisplay(clockEl, VigilState.simTimeMinutes);
-    }
-  }, 1000);
-}
-
-function updateClockDisplay(el, minutes) {
-  const h = Math.floor(minutes / 60).toString().padStart(2, '0');
-  const m = (minutes % 60).toString().padStart(2, '0');
-  el.textContent = `04 Nov 2026 ${h}:${m}`;
+    .catch(() => console.log('Using seeded demonstration cases.'));
 }
 
 // Navigation Tabs
 function switchTab(tabId, compareMode = false) {
   VigilState.currentTab = tabId;
-  const sections = document.querySelectorAll('.view-section');
-  sections.forEach(s => s.classList.remove('active'));
+  const panes = document.querySelectorAll('.tab-pane');
+  panes.forEach(p => p.classList.remove('active'));
 
   const target = document.getElementById(`tab-${tabId}`);
   if (target) target.classList.add('active');
 
-  const links = document.querySelectorAll('.nav-link');
-  links.forEach(l => {
-    l.classList.remove('active');
-    if (l.getAttribute('onclick')?.includes(tabId)) {
-      l.classList.add('active');
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
+    item.classList.remove('active');
+    if (item.getAttribute('onclick')?.includes(`'${tabId}'`)) {
+      item.classList.add('active');
     }
   });
 
   if (tabId === 'nightshift' && compareMode) {
-    const splitCard = document.querySelector('.split-card.without');
+    const splitCard = document.querySelector('.split-panel.standard-emr');
     if (splitCard) splitCard.scrollIntoView({ behavior: 'smooth' });
   }
 }
@@ -272,7 +253,7 @@ function switchTab(tabId, compareMode = false) {
 // Filters & Search
 function setLoopTypeFilter(type) {
   VigilState.loopTypeFilter = type;
-  document.querySelectorAll('.filter-chips .chip-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.filter-pills .pill-btn').forEach(b => b.classList.remove('active'));
   const activeBtn = document.getElementById(`chip-${type === 'all' ? 'all' : (type === 'results_after_discharge' ? 'discharge' : 'referral')}`);
   if (activeBtn) activeBtn.classList.add('active');
   renderBoard();
@@ -300,13 +281,9 @@ function renderBoard() {
   if (!cardsOpened) return;
 
   const filtered = VigilState.loops.filter(l => {
-    // Type filter
     if (VigilState.loopTypeFilter !== 'all' && l.type !== VigilState.loopTypeFilter) return false;
-    // Ward filter
     if (VigilState.wardFilter !== 'all' && l.ward !== VigilState.wardFilter) return false;
-    // Owner filter
     if (VigilState.ownerFilter !== 'all' && l.owner !== VigilState.ownerFilter) return false;
-    // Search query
     if (VigilState.searchQuery) {
       const q = VigilState.searchQuery;
       const haystack = `${l.patientName} ${l.testName} ${l.reason} ${l.ward} ${l.patientId}`.toLowerCase();
@@ -331,17 +308,15 @@ function renderBoard() {
     }
   });
 
-  // Render lanes
   renderLane(cardsOpened, lanes.Opened, 'countOpened');
   renderLane(cardsOwned, lanes.Owned, 'countOwned');
   renderLane(cardsEscalated, lanes.Escalated, 'countEscalated');
   renderLane(cardsActed, lanes.Acted, 'countActed');
 
-  // Update hero counter
-  const heroCount = document.getElementById('heroCount');
-  if (heroCount) {
+  const heroSummary = document.getElementById('heroSummary');
+  if (heroSummary) {
     const unactedCount = lanes.Opened.length + lanes.Escalated.length;
-    heroCount.textContent = `${unactedCount} patient${unactedCount === 1 ? '' : 's'} need a call before morning.`;
+    heroSummary.textContent = `${unactedCount} patient${unactedCount === 1 ? '' : 's'} have critical test results or pending referrals that require immediate clinician attention.`;
   }
 }
 
@@ -350,33 +325,33 @@ function renderLane(container, loopList, countId) {
   if (countEl) countEl.textContent = loopList.length;
 
   if (loopList.length === 0) {
-    container.innerHTML = '<p style="color: var(--vigil-ink-muted); font-size: 14px; text-align: center; margin-top: 40px;">No loops in this lane.</p>';
+    container.innerHTML = '<p style="color: var(--text-muted); font-size: 13px; text-align: center; margin-top: 40px;">No patients in this stage.</p>';
     return;
   }
 
   container.innerHTML = loopList.map(l => {
-    const badgeClass = l.urgency === 'critical' ? 'badge-critical' : (l.urgency === 'urgent' ? 'badge-urgent' : 'badge-routine');
-    const badgeIcon = l.urgency === 'critical' ? '◆ Critical' : (l.urgency === 'urgent' ? '▲ Urgent' : '● Routine');
+    const urgencyClass = l.urgency === 'critical' ? 'urgency-critical' : (l.urgency === 'urgent' ? 'urgency-urgent' : 'urgency-routine');
+    const urgencyLabel = l.urgency === 'critical' ? 'Critical' : (l.urgency === 'urgent' ? 'Urgent' : 'Routine');
 
     let ladderHtml = '';
     if (l.ladder && l.ladder.length > 0) {
       ladderHtml = `
-        <div class="ladder-indicator">
-          ${l.ladder.map((step, idx) => `<span class="ladder-step ${idx === 0 ? 'active' : ''}">${step}</span>`).join(' &rarr; ')}
+        <div class="clinician-flow">
+          ${l.ladder.map((step, idx) => `<span class="flow-step ${idx === 0 ? 'active' : ''}">${step}</span>`).join(' &rarr; ')}
         </div>
       `;
     }
 
     return `
-      <article class="loop-card" onclick="openCardDetail('${l.loopId}')" role="button" tabindex="0">
-        <div class="card-top">
-          <span class="badge ${badgeClass}">${badgeIcon}</span>
-          <span class="countdown">SLA: ${l.slaRemaining || '2h'}</span>
+      <article class="patient-card" onclick="openCardDetail('${l.loopId}')" role="button" tabindex="0">
+        <div class="card-header-row">
+          <span class="urgency-tag ${urgencyClass}">${urgencyLabel}</span>
+          <span class="sla-timer">Response Target: ${l.slaRemaining || '2h'}</span>
         </div>
-        <h3 class="card-patient">${l.patientName}</h3>
-        <p class="card-reason">${l.reason}</p>
+        <div class="patient-name">${l.patientName}</div>
+        <div class="test-summary"><strong>${l.testName}:</strong> ${l.testValue} &bull; ${l.reason}</div>
         ${ladderHtml}
-        <div class="card-footer">
+        <div class="card-footer-row">
           <span>Ward: ${l.ward}</span>
           <span>${l.typeName || l.type}</span>
         </div>
@@ -385,38 +360,41 @@ function renderLane(container, loopList, countId) {
   }).join('');
 }
 
-// Modal Detail View
+// Patient Loop Detail Modal
 function openCardDetail(loopId) {
   VigilState.selectedLoopId = loopId;
   const loop = VigilState.loops.find(l => l.loopId === loopId) || VigilState.loops[0];
 
-  const modal = document.getElementById('loopDetailModal');
+  const modal = document.getElementById('detailModal');
   if (!modal) return;
 
-  const urgencyEl = document.getElementById('modalUrgency');
-  const patientEl = document.getElementById('modalPatient');
-  const reasonEl = document.getElementById('modalReason');
+  const urgencyTag = document.getElementById('modalUrgencyTag');
+  const patientName = document.getElementById('modalPatientName');
+  const reasonText = document.getElementById('modalReasonText');
 
-  if (urgencyEl) {
-    urgencyEl.className = `badge ${loop.urgency === 'critical' ? 'badge-critical' : 'badge-urgent'}`;
-    urgencyEl.textContent = loop.urgency.toUpperCase();
+  if (urgencyTag) {
+    urgencyTag.className = `urgency-tag ${loop.urgency === 'critical' ? 'urgency-critical' : 'urgency-urgent'}`;
+    urgencyTag.textContent = `${loop.urgency.toUpperCase()} FINDING`;
   }
-  if (patientEl) patientEl.textContent = loop.patientName;
-  if (reasonEl) reasonEl.textContent = `${loop.testName}: ${loop.testValue} — ${loop.reason}`;
+  if (patientName) patientName.textContent = loop.patientName;
+  if (reasonText) reasonText.textContent = `${loop.testName}: ${loop.testValue} — ${loop.reason}`;
 
+  const langSelect = document.getElementById('scriptLangSelect');
+  if (langSelect) langSelect.value = 'en';
   updateScriptLanguage();
+
   modal.style.display = 'flex';
 }
 
 function closeDetailModal() {
-  const modal = document.getElementById('loopDetailModal');
+  const modal = document.getElementById('detailModal');
   if (modal) modal.style.display = 'none';
 }
 
-// Multilingual Callback Script Switching
+// Multilingual Patient Script Switching
 function updateScriptLanguage() {
-  const langSelect = document.getElementById('scriptLang');
-  const scriptTextEl = document.getElementById('localizedScriptText');
+  const langSelect = document.getElementById('scriptLangSelect');
+  const scriptTextEl = document.getElementById('callScriptText');
   const backTextEl = document.getElementById('backTranslationText');
 
   const lang = langSelect ? langSelect.value : 'en';
@@ -430,7 +408,7 @@ function updateScriptLanguage() {
       scriptTextEl.style.fontFamily = 'Tahoma, Arial, sans-serif';
     } else {
       scriptTextEl.removeAttribute('dir');
-      scriptTextEl.style.fontFamily = 'var(--font-sans)';
+      scriptTextEl.style.fontFamily = 'inherit';
     }
   }
 
@@ -439,14 +417,14 @@ function updateScriptLanguage() {
   }
 }
 
-// Action Handlers
+// Clinician Actions
 function acceptSelectedLoop() {
   const loop = VigilState.loops.find(l => l.loopId === VigilState.selectedLoopId);
   if (loop) {
     loop.state = 'Owned';
     loop.owner = 'dr.mensah';
     renderBoard();
-    alert(`Ownership accepted by Dr. Mensah for ${loop.patientName}. Loop moved to 'Owned' lane.`);
+    alert(`Case accepted by Dr. Mensah for ${loop.patientName}. Patient moved to 'Doctor Assigned'.`);
     closeDetailModal();
   }
 }
@@ -456,12 +434,12 @@ function actSelectedLoop() {
   if (loop) {
     loop.state = 'Acted';
     renderBoard();
-    alert(`Patient contact logged for ${loop.patientName}. Handoff loop closed.`);
+    alert(`Patient contact confirmed for ${loop.patientName}. Safety loop successfully closed.`);
     closeDetailModal();
   }
 }
 
-// Adversarial Downgrade Modal
+// AI Safety Stress Test Modal
 function openAdversarialModal() {
   const modal = document.getElementById('adversarialModal');
   if (modal) modal.style.display = 'flex';
@@ -472,13 +450,13 @@ function closeAdversarialModal() {
   if (modal) modal.style.display = 'none';
 }
 
-// Night Shift Simulation Player
+// Night Shift Replay Simulation
 function toggleNightShiftPlay() {
   const playBtn = document.getElementById('playBtn');
   if (VigilState.simPlaying) {
     clearInterval(VigilState.simInterval);
     VigilState.simPlaying = false;
-    if (playBtn) playBtn.textContent = '▶ Play Simulation';
+    if (playBtn) playBtn.textContent = '▶ Start Simulation';
   } else {
     VigilState.simPlaying = true;
     if (playBtn) playBtn.textContent = '❚❚ Pause Simulation';
@@ -488,8 +466,8 @@ function toggleNightShiftPlay() {
 
 function setSpeed(speed) {
   VigilState.simSpeed = speed;
-  document.querySelectorAll('#tab-nightshift .chip-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
+  document.querySelectorAll('#tab-nightshift .pill-btn').forEach(b => b.classList.remove('active'));
+  if (event && event.target) event.target.classList.add('active');
   if (VigilState.simPlaying) {
     clearInterval(VigilState.simInterval);
     runNightShiftLoop();
@@ -501,15 +479,14 @@ function resetNightShift() {
   VigilState.simPlaying = false;
   VigilState.simTimeMinutes = 19 * 60;
   const playBtn = document.getElementById('playBtn');
-  if (playBtn) playBtn.textContent = '▶ Play Simulation';
-  const progress = document.getElementById('progressBar');
+  if (playBtn) playBtn.textContent = '▶ Start Simulation';
+  const progress = document.getElementById('simProgressFill');
   if (progress) progress.style.width = '0%';
-  const simTime = document.getElementById('simTime');
+  const simTime = document.getElementById('simTimeDisplay');
   if (simTime) simTime.textContent = '04 Nov 2026 19:00';
 }
 
 function runNightShiftLoop() {
-  // 24 hours (1440 mins) over 90 seconds @ 1x => ~16 mins hospital time per real second
   const stepIntervalMs = 200;
   const minutesPerStep = (1440 / (90 * 1000 / stepIntervalMs)) * VigilState.simSpeed;
 
@@ -518,10 +495,10 @@ function runNightShiftLoop() {
     const elapsed = VigilState.simTimeMinutes - (19 * 60);
     const pct = Math.min(100, Math.max(0, (elapsed / 1440) * 100));
 
-    const progress = document.getElementById('progressBar');
+    const progress = document.getElementById('simProgressFill');
     if (progress) progress.style.width = `${pct}%`;
 
-    const simTime = document.getElementById('simTime');
+    const simTime = document.getElementById('simTimeDisplay');
     if (simTime) {
       const totalMins = Math.floor(VigilState.simTimeMinutes);
       const h = Math.floor(totalMins / 60) % 24;
@@ -538,35 +515,50 @@ function runNightShiftLoop() {
   }, stepIntervalMs);
 }
 
-// Cryptographic Ledger Verification
+// Safety Audit Log Rendering & Tamper Check
+function renderLedger() {
+  const tbody = document.getElementById('ledgerTableBody');
+  if (!tbody) return;
+
+  tbody.innerHTML = LedgerData.map(row => `
+    <tr>
+      <td style="font-family: var(--font-mono); font-weight: 700;">#00${row.seq}</td>
+      <td style="color: var(--text-secondary);">${row.time}</td>
+      <td><strong>${row.patient}</strong></td>
+      <td>${row.action}</td>
+      <td><span class="urgency-tag" style="background:#F1F5F9; color:#334155;">${row.actor}</span></td>
+      <td style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">${row.hash.substring(0, 16)}...</td>
+    </tr>
+  `).join('');
+}
+
 function verifyLedger() {
-  const badge = document.getElementById('chainBadge');
+  const badge = document.getElementById('ledgerBadge');
   if (VigilState.tampered) {
     if (badge) {
-      badge.className = 'badge badge-critical';
-      badge.textContent = '⚠️ Tamper Detected (Seq #2 Hash Mismatch)';
+      badge.className = 'status-badge';
+      badge.style.backgroundColor = '#FEE2E2';
+      badge.style.color = '#991B1B';
+      badge.textContent = '⚠️ Tamper Detected (Entry #002 Modified)';
     }
-    alert('TAMPER DETECTED!\nRecord Seq #2 was modified. SHA-256 hash does not match previous link in chain.\nInterSystems Security Alert Dispatched.');
+    alert('TAMPER DETECTED!\nAudit record #002 was modified. Cryptographic checksum does not match the chain.\nInterSystems Security Alert generated.');
   } else {
     if (badge) {
-      badge.className = 'badge badge-safe';
-      badge.textContent = '✓ Chain Verified';
+      badge.className = 'status-badge';
+      badge.style.backgroundColor = '#D1FAE5';
+      badge.style.color = '#065F46';
+      badge.textContent = '✓ All Records Verified';
     }
-    alert('Cryptographic Chain Verified:\nAll 3 block hashes match their canonical SHA-256 signatures.');
+    alert('Audit Log Verified:\nAll records match their cryptographic checksums. Chain integrity intact.');
   }
 }
 
 function simulateTamper() {
   VigilState.tampered = true;
-  const rows = document.getElementById('ledgerRows');
-  if (rows) {
-    rows.children[1].children[4].textContent = 'user:adversary (MODIFIED)';
-    rows.children[1].children[6].innerHTML = '<span style="color: var(--vigil-critical); font-weight: 700;">CORRUPTED_HASH_XX...</span>';
+  const tbody = document.getElementById('ledgerTableBody');
+  if (tbody && tbody.children.length > 1) {
+    tbody.children[1].children[4].innerHTML = '<span class="urgency-tag" style="background:#FEE2E2; color:#991B1B;">Modified by Adversary</span>';
+    tbody.children[1].children[5].innerHTML = '<span style="color: #DC2626; font-weight: 700;">CORRUPTED_HASH_XX...</span>';
   }
   verifyLedger();
-}
-
-// Consent Gate Queue
-function resolveConsent(action, patientId) {
-  alert(`Consent action [${action.toUpperCase()}] confirmed for patient ${patientId}. Policy audit entry written.`);
 }
