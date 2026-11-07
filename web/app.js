@@ -1,12 +1,13 @@
 /**
  * Vigil for IRIS for Health - Clinical Patient-Safety Handoff Engine
- * Web Frontend Controller
+ * Web Frontend Controller (Linear / Medplum style)
  * (c) 2026 Daniel John <danielbasseyj@gmail.com> - MIT License
  */
 
 // Global State
 const VigilState = {
   currentTab: 'board',
+  viewMode: 'list', // 'list' or 'board'
   loopTypeFilter: 'all',
   wardFilter: 'all',
   ownerFilter: 'all',
@@ -26,18 +27,18 @@ const SEEDED_LOOPS = [
     loopId: 'VGL-01-REEVE',
     patientId: 'P01',
     patientName: 'Martha Reeve (78y)',
-    ward: '4W',
+    ward: 'Ward 4W',
     type: 'results_after_discharge',
-    typeName: 'Lab Result After Discharge',
+    typeName: 'Post-Discharge Lab',
     urgency: 'critical',
     state: 'Opened',
     owner: 'dr.mensah',
     originalOwner: 'dr.okonkwo',
     daysSinceDischarge: 1,
     testName: 'Potassium (Serum)',
-    testValue: '6.8 mmol/L (Critically High)',
+    testValue: '6.8 mmol/L (Severe Hyperkalemia)',
     referenceRange: '3.5 - 5.0 mmol/L',
-    reason: 'Potassium 6.8 mmol/L 1 day after discharge. High vulnerability (age 78, lives alone). Discharging doctor went off-duty.',
+    reason: 'Critical high potassium 1 day after discharge. High clinical vulnerability (age 78, lives alone). Primary doctor off-duty.',
     slaRemaining: '01h 48m',
     ladder: ['Dr. Okonkwo (Off-duty)', 'Dr. Mensah (On-duty)', 'Dr. Adewale (Clinical Director)'],
     consentStatus: 'send',
@@ -50,7 +51,7 @@ const SEEDED_LOOPS = [
     loopId: 'VGL-REF-ONC',
     patientId: 'R01',
     patientName: 'Amina Diallo (82y)',
-    ward: 'Oncology',
+    ward: 'Oncology Clinic',
     type: 'referral_leakage',
     typeName: 'Overdue Specialist Referral',
     urgency: 'urgent',
@@ -59,9 +60,9 @@ const SEEDED_LOOPS = [
     originalOwner: 'dr.okonkwo',
     daysSinceDischarge: 3,
     testName: 'Specialist Referral',
-    testValue: 'Oncology Consultation',
+    testValue: 'Urgent Oncology Consultation',
     referenceRange: 'Target SLA: 48h',
-    reason: 'Urgent cancer referral unbooked for 55 hours (exceeds 48-hour safety target). Discharging doctor off-duty.',
+    reason: 'Urgent oncology referral unbooked for 55 hours (exceeds 48-hour safety target). Discharging doctor off-duty.',
     slaRemaining: '06h 15m',
     ladder: ['Dr. Mensah (On-duty)', 'Dr. Adewale (Clinical Director)'],
     consentStatus: 'send',
@@ -74,18 +75,18 @@ const SEEDED_LOOPS = [
     loopId: 'VGL-02-OKAI',
     patientId: 'P02',
     patientName: 'Samuel Okai (67y)',
-    ward: 'Cardiology',
+    ward: 'Cardiology Unit',
     type: 'results_after_discharge',
-    typeName: 'Lab Result After Discharge',
+    typeName: 'Post-Discharge Lab',
     urgency: 'critical',
     state: 'Owned',
     owner: 'dr.mensah',
     originalOwner: 'dr.mensah',
     daysSinceDischarge: 0,
     testName: 'Troponin I (High Sens)',
-    testValue: '2.4 ng/mL (High)',
+    testValue: '2.4 ng/mL (Cardiac Injury)',
     referenceRange: '< 0.04 ng/mL',
-    reason: 'Troponin I 2.4 ng/mL day of discharge indicating cardiac injury. Dr. Mensah accepted case ownership.',
+    reason: 'Troponin I 2.4 ng/mL day of discharge indicating acute myocardial injury. Dr. Mensah accepted case ownership.',
     slaRemaining: '03h 12m',
     ladder: ['Dr. Mensah (Accepted Case)'],
     consentStatus: 'send',
@@ -98,16 +99,16 @@ const SEEDED_LOOPS = [
     loopId: 'VGL-15-CONTEH',
     patientId: 'P15',
     patientName: 'Fatu Conteh (71y)',
-    ward: '2S',
+    ward: 'Ward 2S',
     type: 'results_after_discharge',
-    typeName: 'Lab Result After Discharge',
+    typeName: 'Post-Discharge Lab',
     urgency: 'critical',
     state: 'Escalated',
     owner: 'dr.adewale',
     originalOwner: 'dr.okonkwo',
     daysSinceDischarge: 2,
     testName: 'INR (Blood Clotting)',
-    testValue: '5.2 (Critically High)',
+    testValue: '5.2 (Severe Bleeding Risk)',
     referenceRange: '2.0 - 3.0',
     reason: 'Blood thinning INR 5.2 2 days after discharge. Alert timed out without response; escalated to Clinical Director Dr. Adewale.',
     slaRemaining: 'OVERDUE (Escalated)',
@@ -122,7 +123,7 @@ const SEEDED_LOOPS = [
     loopId: 'VGL-09-EZE',
     patientId: 'P09',
     patientName: 'Chika Eze (36y)',
-    ward: '4W',
+    ward: 'Ward 4W',
     type: 'results_after_discharge',
     typeName: 'Sensitive Diagnostic Result',
     urgency: 'routine',
@@ -196,6 +197,25 @@ document.addEventListener('DOMContentLoaded', () => {
   renderLedger();
 });
 
+// View Mode Switcher (List vs Board)
+function setViewMode(mode) {
+  VigilState.viewMode = mode;
+  const container = document.getElementById('queueContainer');
+  const listBtn = document.getElementById('viewListBtn');
+  const boardBtn = document.getElementById('viewBoardBtn');
+
+  if (container) {
+    if (mode === 'board') {
+      container.classList.add('view-board');
+    } else {
+      container.classList.remove('view-board');
+    }
+  }
+
+  if (listBtn) listBtn.classList.toggle('active', mode === 'list');
+  if (boardBtn) boardBtn.classList.toggle('active', mode === 'board');
+}
+
 // REST Health Check
 function checkHealth() {
   fetch('/vigil/api/health')
@@ -205,7 +225,7 @@ function checkHealth() {
       if (modeChip && data.mode) {
         modeChip.textContent = data.mode === 'live'
           ? 'Live Gemini AI Hub'
-          : 'Recorded Replay — No Live AI Calls';
+          : 'Autonomous Safety Net Active';
       }
       fetchLoops();
     })
@@ -245,7 +265,7 @@ function switchTab(tabId, compareMode = false) {
   });
 
   if (tabId === 'nightshift' && compareMode) {
-    const splitCard = document.querySelector('.split-panel.standard-emr');
+    const splitCard = document.querySelector('.contrast-card.without-vigil');
     if (splitCard) splitCard.scrollIntoView({ behavior: 'smooth' });
   }
 }
@@ -253,7 +273,7 @@ function switchTab(tabId, compareMode = false) {
 // Filters & Search
 function setLoopTypeFilter(type) {
   VigilState.loopTypeFilter = type;
-  document.querySelectorAll('.filter-pills .pill-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.segmented-control .seg-btn').forEach(b => b.classList.remove('active'));
   const activeBtn = document.getElementById(`chip-${type === 'all' ? 'all' : (type === 'results_after_discharge' ? 'discharge' : 'referral')}`);
   if (activeBtn) activeBtn.classList.add('active');
   renderBoard();
@@ -313,10 +333,16 @@ function renderBoard() {
   renderLane(cardsEscalated, lanes.Escalated, 'countEscalated');
   renderLane(cardsActed, lanes.Acted, 'countActed');
 
-  const heroSummary = document.getElementById('heroSummary');
-  if (heroSummary) {
-    const unactedCount = lanes.Opened.length + lanes.Escalated.length;
-    heroSummary.textContent = `${unactedCount} patient${unactedCount === 1 ? '' : 's'} have critical test results or pending referrals that require immediate clinician attention.`;
+  // Update Top Metric Counters
+  const metricCritical = document.getElementById('metricCriticalCount');
+  if (metricCritical) {
+    const critCount = lanes.Opened.length + lanes.Escalated.length;
+    metricCritical.textContent = `${critCount} Critical Alert${critCount === 1 ? '' : 's'}`;
+  }
+
+  const metricOwned = document.getElementById('metricOwnedCount');
+  if (metricOwned) {
+    metricOwned.textContent = `${lanes.Owned.length} Assigned Doctor${lanes.Owned.length === 1 ? '' : 's'}`;
   }
 }
 
@@ -325,37 +351,57 @@ function renderLane(container, loopList, countId) {
   if (countEl) countEl.textContent = loopList.length;
 
   if (loopList.length === 0) {
-    container.innerHTML = '<p style="color: var(--text-muted); font-size: 13px; text-align: center; margin-top: 40px;">No patients in this stage.</p>';
+    container.innerHTML = `
+      <div class="empty-lane-state">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.6;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 14 14"></polyline>
+        </svg>
+        <span>No patients currently in this stage</span>
+      </div>`;
     return;
   }
 
   container.innerHTML = loopList.map(l => {
     const urgencyClass = l.urgency === 'critical' ? 'urgency-critical' : (l.urgency === 'urgent' ? 'urgency-urgent' : 'urgency-routine');
-    const urgencyLabel = l.urgency === 'critical' ? 'Critical' : (l.urgency === 'urgent' ? 'Urgent' : 'Routine');
+    const urgencyLabel = l.urgency === 'critical' ? 'Critical Alert' : (l.urgency === 'urgent' ? 'Urgent Follow-Up' : 'Routine Note');
+    const urgencyBorder = l.urgency === 'critical' ? 'border-critical' : (l.urgency === 'urgent' ? 'border-urgent' : 'border-routine');
 
-    let ladderHtml = '';
-    if (l.ladder && l.ladder.length > 0) {
-      ladderHtml = `
-        <div class="clinician-flow">
-          ${l.ladder.map((step, idx) => `<span class="flow-step ${idx === 0 ? 'active' : ''}">${step}</span>`).join(' &rarr; ')}
-        </div>
-      `;
-    }
+    const doctorDisplay = l.owner === 'dr.mensah' ? 'Dr. Mensah (On-Duty Night)' : (l.owner === 'dr.adewale' ? 'Dr. Adewale (Clinical Director)' : 'Dr. Okonkwo');
 
     return `
-      <article class="patient-card" onclick="openCardDetail('${l.loopId}')" role="button" tabindex="0">
-        <div class="card-header-row">
-          <span class="urgency-tag ${urgencyClass}">${urgencyLabel}</span>
-          <span class="sla-timer">Response Target: ${l.slaRemaining || '2h'}</span>
+      <div class="patient-row ${urgencyBorder}" onclick="openCardDetail('${l.loopId}')" role="button" tabindex="0">
+        <div class="row-main">
+          <div class="row-header">
+            <span class="urgency-pill ${urgencyClass}">${urgencyLabel}</span>
+            <span class="patient-title">${l.patientName}</span>
+            <span class="patient-meta">${l.ward} &bull; MRN #${l.patientId || '9281'}</span>
+          </div>
+          <div class="row-finding">
+            <strong>${l.testName}:</strong> <span class="test-value">${l.testValue}</span>
+            <span class="finding-sep">&bull;</span>
+            <span class="finding-desc">${l.reason}</span>
+          </div>
         </div>
-        <div class="patient-name">${l.patientName}</div>
-        <div class="test-summary"><strong>${l.testName}:</strong> ${l.testValue} &bull; ${l.reason}</div>
-        ${ladderHtml}
-        <div class="card-footer-row">
-          <span>Ward: ${l.ward}</span>
-          <span>${l.typeName || l.type}</span>
+
+        <div class="row-status">
+          <div class="doctor-badge">
+            <span class="doctor-dot"></span>
+            <span>${doctorDisplay}</span>
+          </div>
+          <div class="sla-clock">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span>Target: ${l.slaRemaining || '2h'}</span>
+          </div>
         </div>
-      </article>
+
+        <div class="row-action">
+          <button class="btn-review">
+            Review Case
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+      </div>
     `;
   }).join('');
 }
@@ -373,7 +419,7 @@ function openCardDetail(loopId) {
   const reasonText = document.getElementById('modalReasonText');
 
   if (urgencyTag) {
-    urgencyTag.className = `urgency-tag ${loop.urgency === 'critical' ? 'urgency-critical' : 'urgency-urgent'}`;
+    urgencyTag.className = `urgency-pill ${loop.urgency === 'critical' ? 'urgency-critical' : 'urgency-urgent'}`;
     urgencyTag.textContent = `${loop.urgency.toUpperCase()} FINDING`;
   }
   if (patientName) patientName.textContent = loop.patientName;
@@ -466,7 +512,7 @@ function toggleNightShiftPlay() {
 
 function setSpeed(speed) {
   VigilState.simSpeed = speed;
-  document.querySelectorAll('#tab-nightshift .pill-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#tab-nightshift .seg-btn').forEach(b => b.classList.remove('active'));
   if (event && event.target) event.target.classList.add('active');
   if (VigilState.simPlaying) {
     clearInterval(VigilState.simInterval);
@@ -522,12 +568,12 @@ function renderLedger() {
 
   tbody.innerHTML = LedgerData.map(row => `
     <tr>
-      <td style="font-family: var(--font-mono); font-weight: 700;">#00${row.seq}</td>
-      <td style="color: var(--text-secondary);">${row.time}</td>
+      <td style="font-family: var(--font-mono); font-weight: 700; color: var(--color-primary);">#00${row.seq}</td>
+      <td style="color: var(--text-muted); font-size: 12px;">${row.time}</td>
       <td><strong>${row.patient}</strong></td>
       <td>${row.action}</td>
-      <td><span class="urgency-tag" style="background:#F1F5F9; color:#334155;">${row.actor}</span></td>
-      <td style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">${row.hash.substring(0, 16)}...</td>
+      <td><span class="urgency-pill" style="background:#F1F5F9; color:#334155;">${row.actor}</span></td>
+      <td style="font-family: var(--font-mono); font-size: 11px; color: var(--text-light);">${row.hash.substring(0, 16)}...</td>
     </tr>
   `).join('');
 }
@@ -537,16 +583,18 @@ function verifyLedger() {
   if (VigilState.tampered) {
     if (badge) {
       badge.className = 'status-badge';
-      badge.style.backgroundColor = '#FEE2E2';
+      badge.style.backgroundColor = '#FEF2F2';
       badge.style.color = '#991B1B';
-      badge.textContent = '⚠️ Tamper Detected (Entry #002 Modified)';
+      badge.style.borderColor = '#FCA5A5';
+      badge.textContent = '⚠️ Tamper Detected (Entry #002 Corrupted)';
     }
     alert('TAMPER DETECTED!\nAudit record #002 was modified. Cryptographic checksum does not match the chain.\nInterSystems Security Alert generated.');
   } else {
     if (badge) {
       badge.className = 'status-badge';
-      badge.style.backgroundColor = '#D1FAE5';
+      badge.style.backgroundColor = '#ECFDF5';
       badge.style.color = '#065F46';
+      badge.style.borderColor = '#6EE7B7';
       badge.textContent = '✓ All Records Verified';
     }
     alert('Audit Log Verified:\nAll records match their cryptographic checksums. Chain integrity intact.');
@@ -557,7 +605,7 @@ function simulateTamper() {
   VigilState.tampered = true;
   const tbody = document.getElementById('ledgerTableBody');
   if (tbody && tbody.children.length > 1) {
-    tbody.children[1].children[4].innerHTML = '<span class="urgency-tag" style="background:#FEE2E2; color:#991B1B;">Modified by Adversary</span>';
+    tbody.children[1].children[4].innerHTML = '<span class="urgency-pill urgency-critical">Modified by Adversary</span>';
     tbody.children[1].children[5].innerHTML = '<span style="color: #DC2626; font-weight: 700;">CORRUPTED_HASH_XX...</span>';
   }
   verifyLedger();
