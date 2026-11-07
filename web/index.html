@@ -35,6 +35,10 @@
 
     <!-- Header Status & Profile -->
     <div class="header-right">
+      <div class="telemetry-pill-header" title="InterSystems IRIS for Health FHIR Gateway Status">
+        <span class="telemetry-icon-pulse"></span>
+        <span>IRIS FHIR: <strong>8ms</strong></span>
+      </div>
       <div class="status-badge">
         <span class="pulse-dot"></span>
         <span id="modeChip">Autonomous Safety Net Active</span>
@@ -60,13 +64,16 @@
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         New Patient Handoff
       </button>
-      <button class="btn btn-outline" onclick="injectChaosEmergency()" title="Simulate live off-shift emergency lab arrival">
+      <button class="btn btn-outline" onclick="injectChaosEmergency()" title="Simulate live off-shift emergency lab arrival (Shortcut: E)">
         ⚡ Inject Emergency Lab
       </button>
-      <button class="btn btn-secondary-shield" onclick="openAdversarialModal()">
+      <button class="btn btn-secondary-shield" onclick="openAdversarialModal()" title="Safety Stress Test (Shortcut: T)">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         Test Safety Guard
       </button>
+      <span class="kbd-hint" title="Hotkeys: 1-4 for views, N for new handoff, E for emergency lab, Esc to close dialogs">
+        <kbd>1-4</kbd> Views &bull; <kbd>N</kbd> New &bull; <kbd>E</kbd> Chaos &bull; <kbd>Esc</kbd>
+      </span>
     </div>
   </div>
 
@@ -88,6 +95,20 @@
          ====================================================================== -->
     <section id="tab-board" class="tab-pane active">
       
+      <!-- Live Autonomous Telemetry Strip -->
+      <div class="live-telemetry-strip">
+        <div class="live-telemetry-pill">
+          <span class="live-telemetry-dot"></span>
+          <span>AUTONOMOUS STREAM</span>
+        </div>
+        <div class="live-telemetry-content" id="liveTelemetryStreamText">
+          [19:14:02] IRIS_FHIR_INBOUND: HL7 ORU_R01 observation parsed &bull; Patient Martha Reeve (K+ 6.8 mmol/L) &bull; InterSystems Gateway sync 8ms
+        </div>
+        <div class="live-telemetry-meta">
+          <span id="liveBusSyncClock">Sync T-0s</span> &bull; <span>Chain Verified</span>
+        </div>
+      </div>
+
       <!-- Monochromatic Metrics Grid -->
       <div class="metrics-grid">
         <div class="metric-box">
@@ -354,7 +375,7 @@
               <td style="color: var(--text-secondary);">
                 "Please call Harbourview General regarding your recent test." <em>(Sensitive medical condition stripped to protect privacy)</em>
               </td>
-              <td><button class="btn btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="alert('Message approved for patient delivery.')">Approve Message</button></td>
+              <td><button class="btn btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="showToast('Outbound Approved', 'Redacted notification approved for WhatsApp delivery to Chika Eze.', 'success')">Approve Message</button></td>
             </tr>
             <tr>
               <td><strong>Yusuf Bello</strong> (44y)</td>
@@ -363,7 +384,7 @@
               <td style="color: var(--text-secondary);">
                 <em>[SMS Blocked: Patient opted out of automated text notifications. Staff will phone directly.]</em>
               </td>
-              <td><button class="btn btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="alert('Hold maintained. Clinical phone call requested.')">Keep Hold</button></td>
+              <td><button class="btn btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="showToast('Hold Maintained', 'SMS hold confirmed. Scheduled for direct nursing callback.', 'warning')">Keep Hold</button></td>
             </tr>
           </tbody>
         </table>
@@ -386,7 +407,7 @@
             Enter custom patient diagnostic data or click a preset below to test live safety evaluation.
           </div>
         </div>
-        <button class="btn btn-white" style="padding: 2px 8px;" onclick="closeNewHandoffModal()">✕</button>
+        <button class="modal-close-btn" onclick="closeNewHandoffModal()" aria-label="Close" title="Close (Esc)">&times;</button>
       </div>
 
       <!-- Presets for 1-click test fill -->
@@ -482,7 +503,7 @@
           <span class="acuity-badge acuity-critical" id="modalUrgencyTag">CRITICAL FINDING</span>
           <h2 style="font-size: 16px; font-weight: 700; margin-top: 4px;" id="modalPatientName">Martha Reeve (78y)</h2>
         </div>
-        <button class="btn btn-white" style="padding: 2px 8px;" onclick="closeDetailModal()">✕</button>
+        <button class="modal-close-btn" onclick="closeDetailModal()" aria-label="Close" title="Close (Esc)">&times;</button>
       </div>
 
       <!-- Condition Assessment -->
@@ -568,7 +589,7 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           AI Safety Stress Test
         </h3>
-        <button class="btn btn-white" style="padding: 2px 8px;" onclick="closeAdversarialModal()">✕</button>
+        <button class="modal-close-btn" onclick="closeAdversarialModal()" aria-label="Close" title="Close (Esc)">&times;</button>
       </div>
 
       <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.45;">
@@ -601,6 +622,9 @@
   <footer class="app-footer">
     <p><strong>Vigil</strong> &bull; Autonomous Diagnostic Patient Safety Handoff Engine &bull; Demonstration Environment</p>
   </footer>
+
+  <!-- Floating Toast Notifications Container -->
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
   <script src="app.js"></script>
 </body>

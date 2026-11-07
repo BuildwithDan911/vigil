@@ -211,6 +211,13 @@ body {
   height: 6px;
   background-color: var(--color-safe);
   border-radius: 50%;
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.5); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 4px rgba(5, 150, 105, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
 }
 
 .user-profile {
@@ -994,12 +1001,14 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(2px);
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
   display: none;
   align-items: center;
   justify-content: center;
   z-index: 100;
+  padding: 16px;
+  transition: opacity 0.15s ease;
 }
 
 .modal-window {
@@ -1008,9 +1017,49 @@ body {
   box-shadow: var(--shadow-modal);
   width: 100%;
   max-width: 620px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
   padding: 24px;
   border: 1px solid var(--border-hairline);
-  animation: modalEnter 0.12s ease-out;
+  animation: modalEnter 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+/* Custom sleek scrollbar for modal-window */
+.modal-window::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-window::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-window::-webkit-scrollbar-thumb {
+  background-color: var(--border-subtle);
+  border-radius: var(--radius-pill);
+}
+.modal-window::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-light);
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.modal-close-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
 }
 
 @keyframes modalEnter {
@@ -1101,4 +1150,274 @@ body {
   font-size: 11px;
   color: var(--text-light);
   padding: 24px 0 12px 0;
+}
+
+/* ==========================================================================
+   Toast Notification System (Clinical Grade, Non-Blocking)
+   ========================================================================== */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+  pointer-events: none;
+  max-width: 390px;
+  width: calc(100vw - 32px);
+}
+
+.toast {
+  pointer-events: auto;
+  background: #FFFFFF;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-hairline);
+  box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.14), 0 4px 8px -2px rgba(15, 23, 42, 0.05);
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  animation: toastSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.toast.toast-fadeout {
+  opacity: 0;
+  transform: translateX(16px);
+}
+
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateX(24px) scale(0.96); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+.toast-icon-wrap {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.toast-success .toast-icon-wrap {
+  background-color: var(--color-safe-subtle);
+  color: var(--color-safe-dark);
+}
+
+.toast-critical .toast-icon-wrap {
+  background-color: var(--color-critical-subtle);
+  color: var(--color-critical);
+}
+
+.toast-warning .toast-icon-wrap {
+  background-color: var(--color-warning-subtle);
+  color: var(--color-warning-dark);
+}
+
+.toast-info .toast-icon-wrap {
+  background-color: var(--color-primary-subtle);
+  color: var(--color-primary);
+}
+
+.toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toast-message {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  word-break: break-word;
+}
+
+.toast-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 15px;
+  line-height: 1;
+}
+.toast-close:hover {
+  color: var(--text-primary);
+}
+
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background-color: var(--color-primary);
+  opacity: 0.7;
+  width: 100%;
+  animation: toastProgress 4.5s linear forwards;
+}
+.toast-success .toast-progress { background-color: var(--color-safe); }
+.toast-critical .toast-progress { background-color: var(--color-critical); }
+.toast-warning .toast-progress { background-color: var(--color-warning-dark); }
+
+@keyframes toastProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+/* ==========================================================================
+   Live Telemetry & Alive Indicators
+   ========================================================================== */
+.telemetry-pill-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: rgba(241, 245, 249, 0.85);
+  border: 1px solid var(--border-hairline);
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.telemetry-icon-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-safe);
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+.live-telemetry-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  padding: 7px 14px;
+  margin-bottom: 14px;
+  font-size: 11px;
+  box-shadow: var(--shadow-hairline);
+}
+
+.live-telemetry-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--color-safe-subtle);
+  color: var(--color-safe-dark);
+  border: 1px solid var(--color-safe-border);
+  padding: 2px 7px;
+  border-radius: var(--radius-xs);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.live-telemetry-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-safe);
+  animation: pulseGlow 1.8s infinite ease-in-out;
+}
+
+.live-telemetry-content {
+  flex: 1;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.2s ease;
+}
+
+.live-telemetry-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-light);
+  white-space: nowrap;
+}
+
+.kbd-hint {
+  font-size: 10px;
+  color: var(--text-light);
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+kbd {
+  font-family: var(--font-mono);
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-hairline);
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+
+/* Acuity Badge Pulsing Indicators */
+.acuity-critical::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  background-color: var(--color-critical);
+  border-radius: 50%;
+  margin-right: 5px;
+  animation: pulseCritical 2s infinite ease-in-out;
+}
+
+@keyframes pulseCritical {
+  0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
+  70% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 4px rgba(220, 38, 38, 0); }
+  100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}
+
+.acuity-urgent::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  background-color: var(--color-warning-dark);
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.acuity-routine::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  background-color: var(--color-safe-dark);
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.sla-overdue {
+  border-color: rgba(220, 38, 38, 0.3) !important;
+  color: var(--color-critical) !important;
+  background-color: var(--color-critical-subtle) !important;
+  font-weight: 600;
 }
