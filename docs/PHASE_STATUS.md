@@ -7,8 +7,8 @@
 | **Phase 2** | Production skeleton (HL7 + board shell) | **Completed** | Commit: `Phase 2: HL7 production skeleton and board shell` |
 | **Phase 3** | Risk score + results-after-discharge loops | **Completed** | Commit: `Phase 3: risk score and discharge loops` |
 | **Phase 4** | Referral leakage loop type | **Completed** | Commit: `Phase 4: referral leakage loops` |
-| **Phase 5** | AI Hub agent decision + DPI-I-689 tracing | In Progress | Ready for execution |
-| **Phase 6** | Workflow + escalation clock | Pending | |
+| **Phase 5** | AI Hub agent decision + DPI-I-689 tracing | **Completed** | Commit: `Phase 5: AI Hub agent with replay fallback` |
+| **Phase 6** | Workflow + escalation clock | In Progress | Ready for execution |
 | **Phase 7** | Ward Board + core screens (design system) | Pending | |
 | **Phase 8** | Night Shift, Without Vigil, Safety Report | Pending | |
 | **Phase 9** | Consent Gate (full) | Pending | |
