@@ -1,6 +1,10 @@
 """
 test_night_shift.py - Phase 8 Night Shift Replay & Without Vigil Verification
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "python"))
+
 from vigil.night_shift import NightShiftEngine
 
 def test_night_shift():
