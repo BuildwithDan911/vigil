@@ -4,8 +4,8 @@
 |---|---|---|---|
 | **Phase 0** | Scaffold, LICENSE, Docker compose, private repo | **Completed** | Commit: `Phase 0: scaffold Docker LICENSE and repo` |
 | **Phase 1** | Day-1 AI Hub + IRIS truth (`DAY1_RESULTS.md`) | **Completed** | Commit: `Phase 1: AI Hub and IRIS day-1 results` |
-| **Phase 2** | Production skeleton (HL7 + board shell) | In Progress | Ready for execution |
-| **Phase 3** | Risk score + results-after-discharge loops | Pending | |
+| **Phase 2** | Production skeleton (HL7 + board shell) | **Completed** | Commit: `Phase 2: HL7 production skeleton and board shell` |
+| **Phase 3** | Risk score + results-after-discharge loops | In Progress | Ready for execution |
 | **Phase 4** | Referral leakage loop type | Pending | |
 | **Phase 5** | AI Hub agent decision + DPI-I-689 tracing | Pending | |
 | **Phase 6** | Workflow + escalation clock | Pending | |
