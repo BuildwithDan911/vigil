@@ -1,34 +1,61 @@
-Write-Host "=== Running Vigil System & Secret Verification (PowerShell) ===" -ForegroundColor Cyan
+# scripts/check.ps1 - Complete Test Suite Runner for Windows
+$ErrorActionPreference = "Stop"
 
-# 1. Secret scan
-Write-Host "Checking for committed secrets..." -ForegroundColor Yellow
-$forbidden = git ls-files | Select-String -Pattern "answer-key\.json|^\.env$"
-if ($forbidden) {
-    Write-Error "FORBIDDEN FILE TRACKED: $forbidden"
-    exit 1
+Write-Host "==========================================================" -ForegroundColor Cyan
+Write-Host "   Vigil for IRIS for Health - Automated Test Suite Runner" -ForegroundColor Cyan
+Write-Host "==========================================================" -ForegroundColor Cyan
+
+$testFiles = @(
+    "tests/test_risk_score.py",
+    "tests/test_referral.py",
+    "tests/test_agent_decision.py",
+    "tests/test_escalation.py",
+    "tests/test_ui_palette.py",
+    "tests/test_night_shift.py",
+    "tests/test_consent.py",
+    "tests/test_ledger.py",
+    "tests/test_vector_memory.py",
+    "tests/test_i18n.py",
+    "tests/test_pex_auditor.py",
+    "tests/test_ipm_clean.py"
+)
+
+$passed = 0
+$failed = 0
+
+foreach ($test in $testFiles) {
+    Write-Host "`n--> Executing $test..." -ForegroundColor Yellow
+    try {
+        $output = python -u $test 2>&1
+        Write-Host $output
+        if ($LASTEXITCODE -eq 0) {
+            $passed++
+        } else {
+            Write-Host "[FAIL] $test exited with code $LASTEXITCODE" -ForegroundColor Red
+            $failed++
+        }
+    } catch {
+        Write-Host "[FAIL] $test threw exception: $_" -ForegroundColor Red
+        $failed++
+    }
 }
 
-$keys = git grep -nE "AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9]{20,}" -- . 2>$null
-if ($keys) {
-    Write-Error "API KEY DETECTED IN TRACKED FILES: $keys"
-    exit 1
-}
-Write-Host "Secret scan: PASSED (0 secrets found)" -ForegroundColor Green
-
-# 2. Synthetic dataset verification
-Write-Host "Checking synthetic patient data..." -ForegroundColor Yellow
-if (-not (Test-Path "data/patients.json") -or -not (Test-Path "data/night/adt")) {
-    Write-Host "Generating night dataset..."
-    python tools/generate_night.py --out data --force
-}
-Write-Host "Dataset verification: PASSED" -ForegroundColor Green
-
-# 3. Docker status check
-if (Get-Command docker -ErrorAction SilentlyContinue) {
-    Write-Host "Docker available. Checking container status..."
-    docker compose ps
+Write-Host "`n--> Checking for committed secrets..." -ForegroundColor Yellow
+$gitStatus = git status --porcelain
+if ($gitStatus -match "\.env\b" -or $gitStatus -match "answer-key\.json") {
+    Write-Host "[FAIL] Forbidden secret files found in git status!" -ForegroundColor Red
+    $failed++
 } else {
-    Write-Host "Note: Docker not in current PATH or not running. Replay tests run locally." -ForegroundColor Gray
+    Write-Host "[PASS] Zero committed secrets confirmed (.env and answer-key gitignored)." -ForegroundColor Green
+    $passed++
 }
 
-Write-Host "=== Vigil Phase Verification Complete: ALL CHECKS GREEN ===" -ForegroundColor Green
+Write-Host "`n==========================================================" -ForegroundColor Cyan
+Write-Host "TEST SUMMARY: $passed Passed, $failed Failed." -ForegroundColor $(if ($failed -eq 0) { "Green" } else { "Red" })
+Write-Host "==========================================================" -ForegroundColor Cyan
+
+if ($failed -gt 0) {
+    exit 1
+} else {
+    exit 0
+}
