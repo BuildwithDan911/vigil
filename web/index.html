@@ -21,15 +21,15 @@
       </div>
     </div>
 
-    <!-- Environment Switcher (Judge Demo vs Fresh Live Input) -->
+    <!-- Environment Switcher (Evaluation Dataset vs Live Workspace) -->
     <div class="env-selector" role="tablist" aria-label="Environment Mode">
       <button class="env-tab active" id="envBtnDemo" onclick="setEnvironment('demo')">
         <span class="env-dot demo"></span>
-        <span>⚡ Demo Cases (Judges)</span>
+        <span>Evaluation Dataset</span>
       </button>
       <button class="env-tab" id="envBtnLive" onclick="setEnvironment('live')">
         <span class="env-dot live"></span>
-        <span>🏥 Live Clinical Workspace</span>
+        <span>Live Workspace</span>
       </button>
     </div>
 
@@ -65,7 +65,8 @@
         New Patient Handoff
       </button>
       <button class="btn btn-outline" onclick="injectChaosEmergency()" title="Simulate live off-shift emergency lab arrival (Shortcut: E)">
-        ⚡ Inject Emergency Lab
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Simulate Inbound Lab
       </button>
       <button class="btn btn-secondary-shield" onclick="openAdversarialModal()" title="Safety Stress Test (Shortcut: T)">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -95,37 +96,34 @@
          ====================================================================== -->
     <section id="tab-board" class="tab-pane active">
       
-      <!-- Live Autonomous Telemetry Strip -->
-      <div class="live-telemetry-strip">
-        <div class="live-telemetry-pill">
-          <span class="live-telemetry-dot"></span>
-          <span>AUTONOMOUS STREAM</span>
+      <!-- Clinical Triage Status & Operational Summary (Medplum Pattern) -->
+      <div class="clinical-summary-bar">
+        <div class="summary-filters">
+          <button class="summary-tab active" id="summaryTabAll" onclick="setLoopTypeFilter('all')">
+            <span>All Active Cases</span>
+            <span class="summary-badge" id="metricTotalCount">5</span>
+          </button>
+          <button class="summary-tab" id="summaryTabAction">
+            <span>Needs Action</span>
+            <span class="summary-badge badge-critical" id="metricCriticalCount">2</span>
+          </button>
+          <button class="summary-tab" id="summaryTabAssigned">
+            <span>Doctor Assigned</span>
+            <span class="summary-badge badge-warning" id="metricOwnedCount">1</span>
+          </button>
+          <button class="summary-tab" id="summaryTabEscalated">
+            <span>Escalated</span>
+            <span class="summary-badge badge-escalated" id="metricEscalatedCount">1</span>
+          </button>
+          <button class="summary-tab" id="summaryTabResolved">
+            <span>Contacted</span>
+            <span class="summary-badge badge-safe" id="metricActedCount">0</span>
+          </button>
         </div>
-        <div class="live-telemetry-content" id="liveTelemetryStreamText">
-          [19:14:02] IRIS_FHIR_INBOUND: HL7 ORU_R01 observation parsed &bull; Patient Martha Reeve (K+ 6.8 mmol/L) &bull; InterSystems Gateway sync 8ms
-        </div>
-        <div class="live-telemetry-meta">
-          <span id="liveBusSyncClock">Sync T-0s</span> &bull; <span>Chain Verified</span>
-        </div>
-      </div>
 
-      <!-- Monochromatic Metrics Grid -->
-      <div class="metrics-grid">
-        <div class="metric-box">
-          <span class="metric-title">Critical Urgency</span>
-          <span class="metric-num critical" id="metricCriticalCount">2</span>
-        </div>
-        <div class="metric-box">
-          <span class="metric-title">Doctor Assigned</span>
-          <span class="metric-num warning" id="metricOwnedCount">1</span>
-        </div>
-        <div class="metric-box">
-          <span class="metric-title">Average Escalation</span>
-          <span class="metric-num">18m</span>
-        </div>
-        <div class="metric-box">
-          <span class="metric-title">Safety Net Status</span>
-          <span class="metric-num safe">100% Caught</span>
+        <div class="summary-facility-meta">
+          <span class="facility-status-dot"></span>
+          <span>InterSystems IRIS for Health &bull; FHIR Gateway Active &bull; Night Shift Lead: Dr. Mensah</span>
         </div>
       </div>
 
@@ -164,14 +162,23 @@
       <div class="queue-container" id="queueContainer">
         
         <!-- Stage 1: Needs Action Now -->
-        <div class="queue-section">
+        <div class="queue-section" id="sectionOpened">
           <div class="section-head">
             <div class="section-title-wrap">
               <span class="status-dot dot-critical"></span>
-              <span>Needs Action Now</span>
+              <span>Action Required — Discharging Physician Off-Duty</span>
               <span class="counter-tag" id="countOpened">2</span>
             </div>
-            <span style="font-size: 11px; color: var(--text-light);">Discharging doctor off-shift; unassigned</span>
+            <span style="font-size: 11px; color: var(--text-light);">Discharging doctor off-shift; unassigned handoff</span>
+          </div>
+          <div class="table-header-row">
+            <div class="col-acuity">ACUITY</div>
+            <div class="col-patient">PATIENT / MRN</div>
+            <div class="col-finding">DIAGNOSTIC FINDING</div>
+            <div class="col-reason">SAFETY CONTEXT</div>
+            <div class="col-doctor">COVERING DOCTOR</div>
+            <div class="col-sla">SLA TARGET</div>
+            <div class="col-action">ACTION</div>
           </div>
           <div class="cards-stream" id="cardsOpened">
             <!-- Dynamically populated by app.js -->
@@ -179,7 +186,7 @@
         </div>
 
         <!-- Stage 2: Doctor Assigned -->
-        <div class="queue-section">
+        <div class="queue-section" id="sectionOwned">
           <div class="section-head">
             <div class="section-title-wrap">
               <span class="status-dot dot-warning"></span>
@@ -188,20 +195,38 @@
             </div>
             <span style="font-size: 11px; color: var(--text-light);">Accepted by on-duty covering clinician</span>
           </div>
+          <div class="table-header-row">
+            <div class="col-acuity">ACUITY</div>
+            <div class="col-patient">PATIENT / MRN</div>
+            <div class="col-finding">DIAGNOSTIC FINDING</div>
+            <div class="col-reason">SAFETY CONTEXT</div>
+            <div class="col-doctor">COVERING DOCTOR</div>
+            <div class="col-sla">SLA TARGET</div>
+            <div class="col-action">ACTION</div>
+          </div>
           <div class="cards-stream" id="cardsOwned">
             <!-- Dynamically populated by app.js -->
           </div>
         </div>
 
         <!-- Stage 3: Overdue / Escalated -->
-        <div class="queue-section">
+        <div class="queue-section" id="sectionEscalated">
           <div class="section-head">
             <div class="section-title-wrap">
               <span class="status-dot dot-escalated"></span>
               <span>Overdue / Escalated</span>
               <span class="counter-tag" id="countEscalated">1</span>
             </div>
-            <span style="font-size: 11px; color: var(--text-light);">SLA response target expired; escalated to Department Head</span>
+            <span style="font-size: 11px; color: var(--text-light);">SLA target expired; escalated to Department Head</span>
+          </div>
+          <div class="table-header-row">
+            <div class="col-acuity">ACUITY</div>
+            <div class="col-patient">PATIENT / MRN</div>
+            <div class="col-finding">DIAGNOSTIC FINDING</div>
+            <div class="col-reason">SAFETY CONTEXT</div>
+            <div class="col-doctor">COVERING DOCTOR</div>
+            <div class="col-sla">SLA TARGET</div>
+            <div class="col-action">ACTION</div>
           </div>
           <div class="cards-stream" id="cardsEscalated">
             <!-- Dynamically populated by app.js -->
@@ -209,14 +234,23 @@
         </div>
 
         <!-- Stage 4: Patient Contacted -->
-        <div class="queue-section">
+        <div class="queue-section" id="sectionActed">
           <div class="section-head">
             <div class="section-title-wrap">
               <span class="status-dot dot-safe"></span>
-              <span>Patient Contacted</span>
+              <span>Patient Contact Confirmed</span>
               <span class="counter-tag" id="countActed">0</span>
             </div>
             <span style="font-size: 11px; color: var(--text-light);">Handoff closed and cryptographically sealed</span>
+          </div>
+          <div class="table-header-row">
+            <div class="col-acuity">ACUITY</div>
+            <div class="col-patient">PATIENT / MRN</div>
+            <div class="col-finding">DIAGNOSTIC FINDING</div>
+            <div class="col-reason">SAFETY CONTEXT</div>
+            <div class="col-doctor">COVERING DOCTOR</div>
+            <div class="col-sla">SLA TARGET</div>
+            <div class="col-action">ACTION</div>
           </div>
           <div class="cards-stream" id="cardsActed">
             <!-- Dynamically populated by app.js -->
@@ -251,7 +285,10 @@
         <!-- Playback Controls -->
         <div class="console-actions-row">
           <div style="display: flex; gap: 8px;">
-            <button class="btn btn-primary" id="playBtn" onclick="toggleNightShiftPlay()">▶ Start Simulation</button>
+            <button class="btn btn-primary" id="playBtn" onclick="toggleNightShiftPlay()">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 4px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              Start Shift Replay
+            </button>
             <button class="btn btn-outline" onclick="resetNightShift()">Reset</button>
           </div>
           <div style="display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--text-muted);">
@@ -269,7 +306,7 @@
         <!-- Panel 1: With Vigil -->
         <div class="contrast-pane vigil-pane">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <div class="pane-title safe">✓ With Vigil (Active Safety Net)</div>
+            <div class="pane-title safe">With Vigil (Autonomous Safety Net)</div>
             <span class="acuity-badge acuity-routine">Enforced</span>
           </div>
           <div class="pane-sub">
@@ -284,7 +321,7 @@
         <!-- Panel 2: Without Vigil -->
         <div class="contrast-pane emr-pane">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <div class="pane-title danger">✕ Without Vigil (Standard Hospital System)</div>
+            <div class="pane-title danger">Standard Hospital Protocol (Without Vigil)</div>
             <span class="acuity-badge acuity-critical" id="emrStatusBadge">Passive Alerting</span>
           </div>
           <div class="pane-sub">
@@ -415,10 +452,10 @@
         <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Quick-Fill Presets:</span>
       </div>
       <div class="preset-chip-group">
-        <button type="button" class="preset-chip" onclick="fillPreset('potassium')">⚡ Critical Hyperkalemia (K+ 6.9)</button>
-        <button type="button" class="preset-chip" onclick="fillPreset('troponin')">⚡ Cardiac Troponin (3.2 ng/mL)</button>
-        <button type="button" class="preset-chip" onclick="fillPreset('referral')">⚡ Overdue Oncology Referral (52h)</button>
-        <button type="button" class="preset-chip" onclick="fillPreset('inr')">⚡ High Bleeding Risk (INR 5.8)</button>
+        <button type="button" class="preset-chip" onclick="fillPreset('potassium')">Critical Hyperkalemia (K+ 6.9)</button>
+        <button type="button" class="preset-chip" onclick="fillPreset('troponin')">Cardiac Troponin (3.2 ng/mL)</button>
+        <button type="button" class="preset-chip" onclick="fillPreset('referral')">Overdue Oncology Referral (52h)</button>
+        <button type="button" class="preset-chip" onclick="fillPreset('inr')">Supratherapeutic Anticoagulation (INR 5.8)</button>
       </div>
 
       <form id="newHandoffForm" onsubmit="handleNewHandoffSubmit(event)">

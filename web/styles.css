@@ -403,13 +403,104 @@ body {
 }
 
 /* ==========================================================================
-   Metrics Bar (Linear Monochromatic Counters)
+   Clinical Summary Bar (Medplum / Worklist Pattern)
    ========================================================================== */
+.clinical-summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  padding: 6px 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+.summary-filters {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.summary-tab {
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.summary-tab:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.summary-tab.active {
+  background-color: #F1F5F9;
+  border-color: var(--border-subtle);
+  color: #0F172A;
+  font-weight: 600;
+}
+
+.summary-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background-color: #E2E8F0;
+  color: #334155;
+}
+
+.summary-badge.badge-critical {
+  background-color: #FEE2E2;
+  color: #B91C1C;
+}
+
+.summary-badge.badge-warning {
+  background-color: #FEF3C7;
+  color: #92400E;
+}
+
+.summary-badge.badge-escalated {
+  background-color: #EDE9FE;
+  color: #6D28D9;
+}
+
+.summary-badge.badge-safe {
+  background-color: #DCFCE7;
+  color: #15803D;
+}
+
+.summary-facility-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.facility-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10B981;
+}
+
 .metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
+  display: none;
 }
 
 .metric-box {
@@ -590,29 +681,56 @@ body {
 .cards-stream {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
-/* Patient Row (Architectural Linear Card) */
+/* ==========================================================================
+   Clinical Worklist Table Header & High-Density Rows (Medplum Pattern)
+   ========================================================================== */
+.table-header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 14px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-hairline);
+  background-color: rgba(248, 250, 252, 0.85);
+  border-radius: var(--radius-xs);
+  margin-bottom: 4px;
+}
+
+.col-acuity { width: 85px; flex-shrink: 0; }
+.col-patient { width: 175px; flex-shrink: 0; }
+.col-finding { width: 230px; flex-shrink: 0; }
+.col-reason { flex: 1; min-width: 0; }
+.col-doctor { width: 160px; flex-shrink: 0; }
+.col-sla { width: 115px; flex-shrink: 0; }
+.col-action { width: 95px; flex-shrink: 0; text-align: right; }
+
+/* Patient Row (Clinical Worklist Entry) */
 .patient-row {
   background-color: var(--bg-card);
   border: 1px solid var(--border-hairline);
-  border-radius: var(--radius-md);
-  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   cursor: pointer;
-  transition: all 0.12s ease;
-  box-shadow: var(--shadow-hairline);
+  transition: all 0.1s ease;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
   position: relative;
 }
 
 .patient-row:hover {
-  background-color: var(--bg-card-hover);
-  border-color: var(--border-strong);
-  transform: translateY(-1px);
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05);
 }
 
 .patient-row.border-critical {
@@ -625,127 +743,120 @@ body {
   border-left: 3px solid var(--color-safe);
 }
 
-.row-left {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.row-patient-line {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
 .patient-name-bold {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
+  line-height: 1.3;
 }
 
 .patient-demographics {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-light);
   font-weight: 500;
+  font-family: var(--font-mono);
+  margin-top: 1px;
 }
 
-/* Acuity Micro-Badge (No candy pills) */
+/* Acuity Badge (Clean Medical Grade, No Toy Bulbs) */
 .acuity-badge {
+  display: inline-flex;
+  align-items: center;
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   padding: 2px 6px;
   border-radius: var(--radius-xs);
   border: 1px solid transparent;
 }
 
 .acuity-critical {
-  background-color: var(--color-critical-subtle);
-  color: var(--color-critical-dark);
-  border-color: var(--color-critical-border);
+  background-color: #FEE2E2;
+  color: #B91C1C;
+  border-color: #FCA5A5;
 }
 .acuity-urgent {
-  background-color: var(--color-warning-subtle);
-  color: var(--color-warning-dark);
-  border-color: var(--color-warning-border);
+  background-color: #FEF3C7;
+  color: #92400E;
+  border-color: #FCD34D;
 }
 .acuity-routine {
-  background-color: var(--color-safe-subtle);
-  color: var(--color-safe-dark);
-  border-color: var(--color-safe-border);
-}
-
-.row-finding-line {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.4;
+  background-color: #EFF6FF;
+  color: #1D4ED8;
+  border-color: #BFDBFE;
 }
 
 .finding-strong {
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.finding-bullet {
-  color: var(--text-light);
-  margin: 0 4px;
+.lab-value-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 600;
 }
 
 .finding-explanation {
+  font-size: 11px;
   color: var(--text-muted);
-}
-
-.row-meta-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .clinician-chip {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-secondary);
   background-color: var(--bg-subtle);
   border: 1px solid var(--border-hairline);
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-xs);
+  white-space: nowrap;
 }
 
 .sla-tag {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
   color: var(--text-muted);
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-hairline);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
   white-space: nowrap;
 }
 
 .btn-open-case {
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: var(--color-primary);
-  background-color: var(--color-primary-subtle);
-  border: 1px solid rgba(37, 99, 235, 0.15);
+  color: var(--text-secondary);
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-hairline);
   padding: 4px 10px;
   border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: all 0.1s ease;
   white-space: nowrap;
 }
 
 .patient-row:hover .btn-open-case {
-  background-color: var(--color-primary);
+  background-color: #0F172A;
   color: #FFFFFF;
+  border-color: #0F172A;
 }
 
 .empty-state-notice {
@@ -753,10 +864,13 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background-color: rgba(243, 244, 246, 0.5);
+  background-color: rgba(248, 250, 252, 0.6);
   border: 1px dashed var(--border-hairline);
-  border-radius: var(--radius-md);
-  padding: 14px;
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  font-size: 11px;
+  color: var(--text-light);
+}
   color: var(--text-light);
   font-size: 12px;
 }
@@ -1377,22 +1491,15 @@ kbd {
   color: var(--text-secondary);
 }
 
-/* Acuity Badge Pulsing Indicators */
+/* Acuity Badge Clinical Indicator Dots (Medplum Style) */
 .acuity-critical::before {
   content: '';
   display: inline-block;
   width: 5px;
   height: 5px;
-  background-color: var(--color-critical);
+  background-color: #B91C1C;
   border-radius: 50%;
   margin-right: 5px;
-  animation: pulseCritical 2s infinite ease-in-out;
-}
-
-@keyframes pulseCritical {
-  0% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
-  70% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 4px rgba(220, 38, 38, 0); }
-  100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
 }
 
 .acuity-urgent::before {
@@ -1400,7 +1507,7 @@ kbd {
   display: inline-block;
   width: 5px;
   height: 5px;
-  background-color: var(--color-warning-dark);
+  background-color: #D97706;
   border-radius: 50%;
   margin-right: 5px;
 }
@@ -1410,7 +1517,7 @@ kbd {
   display: inline-block;
   width: 5px;
   height: 5px;
-  background-color: var(--color-safe-dark);
+  background-color: #2563EB;
   border-radius: 50%;
   margin-right: 5px;
 }

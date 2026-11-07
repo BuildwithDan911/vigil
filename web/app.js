@@ -501,6 +501,21 @@ function renderBoard() {
   if (metricOwned) {
     metricOwned.textContent = lanes.Owned.length;
   }
+
+  const metricTotal = document.getElementById('metricTotalCount');
+  if (metricTotal) {
+    metricTotal.textContent = filtered.length;
+  }
+
+  const metricEscalated = document.getElementById('metricEscalatedCount');
+  if (metricEscalated) {
+    metricEscalated.textContent = lanes.Escalated.length;
+  }
+
+  const metricActed = document.getElementById('metricActedCount');
+  if (metricActed) {
+    metricActed.textContent = lanes.Acted.length;
+  }
 }
 
 function formatSlaCountdown(loop) {
@@ -532,8 +547,8 @@ function renderLane(container, loopList, countId) {
   if (loopList.length === 0) {
     const isLive = VigilState.environment === 'live';
     const emptyNotice = isLive
-      ? 'No active cases in this stage. Click "+ New Patient Handoff" to dispatch a case.'
-      : 'No active cases in this stage.';
+      ? 'No active handoffs in this stage. Use "+ New Patient Handoff" or "Simulate Inbound Lab" to dispatch.'
+      : 'No active handoffs in this stage.';
     container.innerHTML = `
       <div class="empty-state-notice">
         <span>${emptyNotice}</span>
@@ -552,30 +567,43 @@ function renderLane(container, loopList, countId) {
 
     return `
       <div class="patient-row ${urgencyBorder}" onclick="openCardDetail('${l.loopId}')" role="button" tabindex="0">
-        <div class="row-left">
-          <div class="row-patient-line">
-            <span class="acuity-badge ${urgencyClass}">${urgencyLabel}</span>
-            <span class="patient-name-bold">${l.patientName}</span>
-            <span class="patient-demographics">${l.ward} &bull; MRN #${l.patientId || '9281'}</span>
-          </div>
-          <div class="row-finding-line">
-            <span class="finding-strong">${l.testName}:</span> ${l.testValue}
-            <span class="finding-bullet">&bull;</span>
-            <span class="finding-explanation">${l.reason}</span>
+        <div class="col-acuity">
+          <span class="acuity-badge ${urgencyClass}">${urgencyLabel}</span>
+        </div>
+
+        <div class="col-patient">
+          <div class="patient-name-bold">${l.patientName}</div>
+          <div class="patient-demographics">${l.ward} &bull; MRN #${l.patientId || '9281'}</div>
+        </div>
+
+        <div class="col-finding">
+          <div class="finding-strong">${l.testName}</div>
+          <div class="finding-val-line">
+            <span class="lab-value-tag">${l.testValue}</span>
           </div>
         </div>
 
-        <div class="row-meta-right">
+        <div class="col-reason">
+          <div class="finding-explanation">${l.reason}</div>
+        </div>
+
+        <div class="col-doctor">
           <div class="clinician-chip">
             <span class="status-dot dot-${l.urgency === 'critical' ? 'critical' : 'warning'}"></span>
             <span>${doctorDisplay}</span>
           </div>
+        </div>
+
+        <div class="col-sla">
           <div class="sla-tag ${isOverdue ? 'sla-overdue' : ''}">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             <span class="sla-live-tick" data-loop-id="${l.loopId}">${slaText}</span>
           </div>
+        </div>
+
+        <div class="col-action">
           <button class="btn-open-case">
-            Review Case &rarr;
+            Review &rarr;
           </button>
         </div>
       </div>
