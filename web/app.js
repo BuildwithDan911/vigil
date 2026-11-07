@@ -433,6 +433,10 @@ function openCardDetail(loopId) {
   const urgencyTag = document.getElementById('modalUrgencyTag');
   const patientName = document.getElementById('modalPatientName');
   const reasonText = document.getElementById('modalReasonText');
+  const telemetrySpan = document.getElementById('modalTelemetrySpan');
+  const branch1 = document.getElementById('modalBranch1');
+  const branch2 = document.getElementById('modalBranch2');
+  const branch3 = document.getElementById('modalBranch3');
 
   if (urgencyTag) {
     urgencyTag.className = `acuity-badge ${loop.urgency === 'critical' ? 'acuity-critical' : 'acuity-urgent'}`;
@@ -440,6 +444,19 @@ function openCardDetail(loopId) {
   }
   if (patientName) patientName.textContent = loop.patientName;
   if (reasonText) reasonText.textContent = `${loop.testName}: ${loop.testValue} — ${loop.reason}`;
+
+  if (telemetrySpan) {
+    telemetrySpan.textContent = `IRIS AI Hub %AI.Agent • 384d Vector Match: 0.94 • 412ms`;
+  }
+  if (branch1) {
+    branch1.textContent = loop.owner === 'dr.mensah' ? 'Routed to Dr. Mensah (On-Duty)' : 'Routed to Dr. Adewale (Director)';
+  }
+  if (branch2) {
+    branch2.textContent = `Active ${loop.slaRemaining || '2h'} SLA timer`;
+  }
+  if (branch3) {
+    branch3.textContent = loop.consentStatus === 'redact' ? 'Sensitive: Diagnosis hidden' : 'Direct contact authorized';
+  }
 
   const langSelect = document.getElementById('scriptLangSelect');
   if (langSelect) langSelect.value = 'en';
@@ -639,6 +656,74 @@ function handleNewHandoffSubmit(event) {
   renderLedger();
 
   alert(`Live Safety Net Dispatched!\nCase ${newId} created for ${patientName}.\nUrgency Enforced: ${urgency.toUpperCase()} (SLA: ${slaRemaining}).\nRouted to ${coveringDr}.`);
+}
+
+// 1-Click Chaos Emergency Injection (Inspired by SynapseHealer)
+function injectChaosEmergency() {
+  const emergencyCases = [
+    { name: "Kassim Bello", age: "69y / M", ward: "Ward 4W", test: "Potassium (Serum)", val: "7.1 mmol/L (Severe Hyperkalemia)", reason: "Critical high potassium returned 2 hours after discharge. Discharging doctor off-duty." },
+    { name: "Grace Adebayo", age: "61y / F", ward: "Cardiology", test: "Troponin I (High Sens)", val: "3.8 ng/mL (Acute Myocardial Injury)", reason: "Delayed troponin leak detected post-discharge. Immediate clinical callback required." },
+    { name: "Emmanuel Mensah", age: "74y / M", ward: "Ward 2S", test: "INR (Prothrombin Time)", val: "6.2 (Extreme Bleeding Risk)", reason: "Critical supratherapeutic anticoagulation returned post-discharge. Covering staff alerted." }
+  ];
+
+  const pick = emergencyCases[Math.floor(Math.random() * emergencyCases.length)];
+  const newId = `VGL-CHAOS-${Date.now().toString().slice(-4)}`;
+
+  const newLoop = {
+    loopId: newId,
+    patientId: `P${Math.floor(Math.random() * 899 + 100)}`,
+    patientName: `${pick.name} (${pick.age})`,
+    ward: pick.ward,
+    type: 'results_after_discharge',
+    typeName: 'Post-Discharge Lab',
+    urgency: 'critical',
+    state: 'Opened',
+    owner: 'dr.mensah',
+    originalOwner: 'dr.okonkwo',
+    daysSinceDischarge: 1,
+    testName: pick.test,
+    testValue: pick.val,
+    referenceRange: 'Critical Threshold Exceeded',
+    reason: pick.reason,
+    slaRemaining: '01h 58m',
+    ladder: ['Dr. Okonkwo (Off-duty)', 'Dr. Mensah (On-duty)', 'Dr. Adewale (Clinical Director)'],
+    consentStatus: 'send',
+    ruleFloor: 'CRITICAL',
+    modelRecommendation: 'CRITICAL',
+    enforcedUrgency: 'CRITICAL',
+    decisionSource: 'medical_safety_guard'
+  };
+
+  CALLBACK_SCRIPTS[newId] = {
+    en: {
+      text: `Hello, this is Harbourview General calling for ${pick.name} regarding an urgent ${pick.test}. Please contact our clinical emergency team on 0800-427-268 immediately.`,
+      back: `Hello, this is Harbourview General calling for ${pick.name} regarding an urgent ${pick.test}. Please phone 0800-427-268 immediately.`,
+      rtl: false
+    }
+  };
+
+  VigilState.liveLoops.unshift(newLoop);
+
+  // Append new event to cryptographic ledger
+  const newSeq = LedgerData.length + 1;
+  const newHash = Array.from(new Uint8Array(32))
+    .map(() => Math.floor(Math.random() * 16).toString(16))
+    .join('');
+
+  LedgerData.push({
+    seq: newSeq,
+    time: '04 Nov 2026 23:15:00',
+    patient: `${pick.name} (${pick.age})`,
+    action: `Autonomous Emergency Intercept: ${pick.test} (${pick.val})`,
+    actor: 'Vigil Medical Guard',
+    hash: newHash
+  });
+
+  setEnvironment('live');
+  renderBoard();
+  renderLedger();
+
+  alert(`⚡ EMERGENCY LAB INTERCEPTED!\n\nPatient: ${pick.name} (${pick.age})\nTest: ${pick.test} = ${pick.val}\n\nVigil Autonomous Execution:\n1. Discharging doctor verified off-shift\n2. Case routed to on-duty Dr. Mensah\n3. 2-Hour SLA Timer started\n4. Cryptographic entry #${newSeq} written to audit log.`);
 }
 
 // AI Safety Stress Test Modal
