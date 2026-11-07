@@ -8,8 +8,8 @@
 | **Phase 3** | Risk score + results-after-discharge loops | **Completed** | Commit: `Phase 3: risk score and discharge loops` |
 | **Phase 4** | Referral leakage loop type | **Completed** | Commit: `Phase 4: referral leakage loops` |
 | **Phase 5** | AI Hub agent decision + DPI-I-689 tracing | **Completed** | Commit: `Phase 5: AI Hub agent with replay fallback` |
-| **Phase 6** | Workflow + escalation clock | In Progress | Ready for execution |
-| **Phase 7** | Ward Board + core screens (design system) | Pending | |
+| **Phase 6** | Workflow + escalation clock | **Completed** | Commit: `Phase 6: workflow and escalation` |
+| **Phase 7** | Ward Board + core screens (design system) | In Progress | Ready for execution |
 | **Phase 8** | Night Shift, Without Vigil, Safety Report | Pending | |
 | **Phase 9** | Consent Gate (full) | Pending | |
 | **Phase 10** | Loop Ledger + verification UI | Pending | |
