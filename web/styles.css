@@ -866,6 +866,40 @@ body {
   border: 1px solid var(--border-hairline);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
+  animation: eventFadeIn 0.25s ease-out;
+}
+
+@keyframes eventFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.event-item.border-critical-left {
+  border-left: 3px solid var(--color-critical);
+}
+
+.event-item.border-urgent-left {
+  border-left: 3px solid var(--color-warning);
+}
+
+.event-item.border-safe-left {
+  border-left: 3px solid var(--color-safe);
+}
+
+.event-item.failure-item {
+  background-color: var(--color-critical-subtle);
+  border-color: var(--color-critical-border);
+  border-left: 3px solid var(--color-critical);
+}
+
+.pulse-alert {
+  animation: statPulse 0.4s ease-in-out;
+}
+
+@keyframes statPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); color: #B91C1C; }
+  100% { transform: scale(1); }
 }
 
 .event-item-top {

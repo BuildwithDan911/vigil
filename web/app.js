@@ -197,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
   checkHealth();
   renderBoard();
   renderLedger();
+  initNightShiftView();
 });
 
 // Environment Switcher (Judge Demo vs Fresh Live Input)
@@ -737,6 +738,132 @@ function closeAdversarialModal() {
   if (modal) modal.style.display = 'none';
 }
 
+// Dynamic 24-Hour Night Shift Replay Engine
+VigilState.simFiredMilestones = new Set();
+
+const SIM_MILESTONES = [
+  {
+    minute: 19 * 60 + 14, // 19:14
+    key: 'martha',
+    withVigil: {
+      patient: '19:14 • Martha Reeve (Potassium 6.8 mmol/L)',
+      badge: 'Critical Intercepted',
+      badgeClass: 'acuity-critical',
+      borderClass: 'border-critical-left',
+      desc: 'Lab returned 14m after Dr. Okonkwo clocked off. Discharging doctor verified off-shift. Vigil auto-paged covering Dr. Mensah and armed a 2-hour SLA countdown timer.'
+    },
+    withoutVigil: {
+      patient: '19:14 • Martha Reeve (Potassium 6.8 mmol/L)',
+      badge: 'Unread Alert',
+      desc: 'Result delivered to Dr. Okonkwo’s personal clinic inbox. Doctor is off-duty. Zero notifications sent to on-duty staff. Patient sitting at home unmonitored.'
+    },
+    lostCount: 1,
+    lostDetail: '1 critical hyperkalemia (Potassium 6.8 mmol/L) unaddressed in closed inbox.'
+  },
+  {
+    minute: 19 * 60 + 30, // 19:30
+    key: 'martha_ack',
+    withVigil: {
+      patient: '19:30 • Martha Reeve • Case Ownership Accepted',
+      badge: 'Fast Ownership (16m)',
+      badgeClass: 'acuity-routine',
+      borderClass: 'border-safe-left',
+      desc: 'Dr. Mensah accepted case ownership via mobile alert. Patient callback script generated with verified English back-translation. SLA clock safely halted.'
+    },
+    withoutVigil: null,
+    lostCount: 1,
+    lostDetail: '1 critical hyperkalemia unaddressed. Patient at home with acute cardiac arrest risk.'
+  },
+  {
+    minute: 22 * 60 + 45, // 22:45
+    key: 'samuel',
+    withVigil: {
+      patient: '22:45 • Samuel Okai (Troponin 2.4 ng/mL)',
+      badge: 'Cardiac Injury Caught',
+      badgeClass: 'acuity-critical',
+      borderClass: 'border-critical-left',
+      desc: 'High-sensitivity troponin returned 4h post-discharge. Autonomous engine identified acute myocardial injury and escalated to Dr. Mensah for emergency callback.'
+    },
+    withoutVigil: {
+      patient: '22:45 • Samuel Okai (Troponin 2.4 ng/mL)',
+      badge: 'Cardiac Injury Unread',
+      desc: 'Acute myocardial injury result delivered to closed inbox. Dr. Okonkwo asleep. No covering staff alerted. Delay ticking past 10 hours overnight.'
+    },
+    lostCount: 2,
+    lostDetail: '2 patients lost: 1 severe hyperkalemia + 1 acute myocardial injury unaddressed.'
+  },
+  {
+    minute: 26 * 60, // 02:00 AM (Next Day)
+    key: 'amina',
+    withVigil: {
+      patient: '02:00 • Amina Diallo (Oncology Specialist Referral)',
+      badge: 'SLA Breach Intercepted',
+      badgeClass: 'acuity-urgent',
+      borderClass: 'border-urgent-left',
+      desc: 'Cancer referral reached 55 hours unbooked (exceeding 48h safety deadline). Autonomous escalation paged patient navigator to secure priority clinic slot.'
+    },
+    withoutVigil: {
+      patient: '02:00 • Amina Diallo (Oncology Referral)',
+      badge: 'Referral Dropped',
+      desc: 'Outbound oncology referral quietly breached 48h safety SLA with zero reminder. Patient lost in administrative backlog.'
+    },
+    lostCount: 3,
+    lostDetail: '3 patients fell through the cracks: 1 hyperkalemia, 1 cardiac injury, 1 lost oncology referral.'
+  },
+  {
+    minute: 31 * 60, // 07:00 AM (Next Day - Morning Shift)
+    key: 'morning_shift',
+    withVigil: {
+      patient: '07:00 • Morning Shift Handover Complete',
+      badge: '100% Protected',
+      badgeClass: 'acuity-routine',
+      borderClass: 'border-safe-left',
+      desc: 'Day team arrives. 3 of 3 critical diagnostic handoffs intercepted and resolved. Median response time: 18 minutes. 0 patients lost to follow-up.'
+    },
+    withoutVigil: {
+      patient: '07:00 • Morning Shift Arrives to 3 Critical Failures',
+      badge: '14.2h Delay',
+      desc: 'Day doctors open inboxes. Martha Reeve (K+ 6.8) unmonitored for 11h 46m. Samuel Okai (Trop 2.4) unaddressed for 8h 15m. Average delay: 14.2 hours.'
+    },
+    lostCount: 3,
+    lostDetail: 'Morning shift arrives. 3 patients suffered severe diagnostic delays (Average delay: 14.2 hours). High clinical malpractice exposure.'
+  }
+];
+
+function initNightShiftView() {
+  const withVigil = document.getElementById('withVigilStream');
+  const withoutVigil = document.getElementById('withoutVigilStream');
+  const lostCountEl = document.getElementById('withoutVigilLost');
+  const lostDetailEl = document.getElementById('withoutVigilDetail');
+
+  if (withVigil) {
+    withVigil.innerHTML = `
+      <div class="event-item border-safe-left">
+        <div class="event-item-top">
+          <span class="event-patient">19:00 • Shift Handover Complete</span>
+          <span class="acuity-badge acuity-routine">On-Duty Active</span>
+        </div>
+        <p class="event-desc">Dr. Okonkwo signed out. Dr. Mensah takes active night coverage. Vigil autonomous safety net armed.</p>
+      </div>
+    `;
+  }
+
+  if (withoutVigil) {
+    withoutVigil.innerHTML = `
+      <div class="event-item" style="opacity: 0.65;">
+        <div class="event-item-top">
+          <span class="event-patient">19:00 • Dr. Okonkwo Clocks Off</span>
+          <span class="acuity-badge" style="background:#F1F5F9; color:#475569;">Inboxes Closed</span>
+        </div>
+        <p class="event-desc">Standard hospital EMR in passive mode. Post-discharge results will accumulate in individual inboxes without active routing.</p>
+      </div>
+    `;
+  }
+
+  if (lostCountEl) lostCountEl.textContent = '0 Patients Lost';
+  if (lostDetailEl) lostDetailEl.textContent = 'Night shift underway (19:00). Awaiting post-discharge lab returns...';
+}
+
 // Night Shift Replay Simulation
 function toggleNightShiftPlay() {
   const playBtn = document.getElementById('playBtn');
@@ -765,16 +892,18 @@ function resetNightShift() {
   clearInterval(VigilState.simInterval);
   VigilState.simPlaying = false;
   VigilState.simTimeMinutes = 19 * 60;
+  VigilState.simFiredMilestones.clear();
   const playBtn = document.getElementById('playBtn');
   if (playBtn) playBtn.textContent = '▶ Start Simulation';
   const progress = document.getElementById('simProgressFill');
   if (progress) progress.style.width = '0%';
   const simTime = document.getElementById('simTimeDisplay');
   if (simTime) simTime.textContent = '04 Nov 2026 19:00';
+  initNightShiftView();
 }
 
 function runNightShiftLoop() {
-  const stepIntervalMs = 200;
+  const stepIntervalMs = 150;
   const minutesPerStep = (1440 / (90 * 1000 / stepIntervalMs)) * VigilState.simSpeed;
 
   VigilState.simInterval = setInterval(() => {
@@ -788,10 +917,60 @@ function runNightShiftLoop() {
     const simTime = document.getElementById('simTimeDisplay');
     if (simTime) {
       const totalMins = Math.floor(VigilState.simTimeMinutes);
+      const isNextDay = totalMins >= 24 * 60;
       const h = Math.floor(totalMins / 60) % 24;
       const m = totalMins % 60;
-      simTime.textContent = `05 Nov 2026 ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      simTime.textContent = `${isNextDay ? '05' : '04'} Nov 2026 ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
     }
+
+    // Check milestones
+    SIM_MILESTONES.forEach(m => {
+      if (VigilState.simTimeMinutes >= m.minute && !VigilState.simFiredMilestones.has(m.key)) {
+        VigilState.simFiredMilestones.add(m.key);
+        
+        const withVigil = document.getElementById('withVigilStream');
+        const withoutVigil = document.getElementById('withoutVigilStream');
+        const lostCountEl = document.getElementById('withoutVigilLost');
+        const lostDetailEl = document.getElementById('withoutVigilDetail');
+
+        if (withVigil && m.withVigil) {
+          const item = document.createElement('div');
+          item.className = `event-item ${m.withVigil.borderClass || ''}`;
+          item.innerHTML = `
+            <div class="event-item-top">
+              <span class="event-patient">${m.withVigil.patient}</span>
+              <span class="acuity-badge ${m.withVigil.badgeClass}">${m.withVigil.badge}</span>
+            </div>
+            <p class="event-desc">${m.withVigil.desc}</p>
+          `;
+          withVigil.prepend(item);
+        }
+
+        if (withoutVigil && m.withoutVigil) {
+          const item = document.createElement('div');
+          item.className = 'event-item failure-item';
+          item.innerHTML = `
+            <div class="event-item-top">
+              <span class="event-patient">${m.withoutVigil.patient}</span>
+              <span style="font-size: 11px; font-weight: 700; color: var(--color-critical-dark);">${m.withoutVigil.badge}</span>
+            </div>
+            <p class="event-desc">${m.withoutVigil.desc}</p>
+          `;
+          withoutVigil.prepend(item);
+        }
+
+        if (lostCountEl) {
+          lostCountEl.textContent = `${m.lostCount} Patient${m.lostCount === 1 ? '' : 's'} Lost to Follow-Up`;
+          lostCountEl.classList.remove('pulse-alert');
+          void lostCountEl.offsetWidth; // trigger reflow
+          lostCountEl.classList.add('pulse-alert');
+        }
+
+        if (lostDetailEl) {
+          lostDetailEl.textContent = m.lostDetail;
+        }
+      }
+    });
 
     if (pct >= 100) {
       clearInterval(VigilState.simInterval);

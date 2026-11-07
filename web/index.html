@@ -255,36 +255,8 @@
             Critical results are routed to on-duty staff, escalation timers prevent delays, and every action is verified.
           </div>
 
-          <div class="event-stack">
-            <div class="event-item">
-              <div class="event-item-top">
-                <span class="event-patient">Martha Reeve (Potassium 6.8 mmol/L)</span>
-                <span class="acuity-badge acuity-critical">Emergency Caught</span>
-              </div>
-              <p class="event-desc">
-                Discharging doctor went off-duty at 7:00 PM. Result arrived at 7:14 PM. Vigil instantly paged on-duty Dr. Mensah and prepared a patient callback script.
-              </p>
-            </div>
-
-            <div class="event-item">
-              <div class="event-item-top">
-                <span class="event-patient">Samuel Okai (Troponin 2.4 ng/mL)</span>
-                <span class="acuity-badge acuity-critical">Doctor Notified</span>
-              </div>
-              <p class="event-desc">
-                Cardiac injury result arrived 4 hours post-discharge. Dr. Mensah accepted ownership within 15 minutes to coordinate an emergency review.
-              </p>
-            </div>
-
-            <div class="event-item">
-              <div class="event-item-top">
-                <span class="event-patient">Amina Diallo (Oncology Specialist Referral)</span>
-                <span class="acuity-badge acuity-urgent">Follow-Up Chased</span>
-              </div>
-              <p class="event-desc">
-                Referral unbooked for 55 hours (exceeding 48h safety SLA). Patient navigator chased the cancer clinic to secure an appointment.
-              </p>
-            </div>
+          <div class="event-stack" id="withVigilStream">
+            <!-- Dynamically populated during 24h simulation -->
           </div>
         </div>
 
@@ -292,47 +264,19 @@
         <div class="contrast-pane emr-pane">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <div class="pane-title danger">✕ Without Vigil (Standard Hospital System)</div>
-            <span class="acuity-badge acuity-critical">Failure</span>
+            <span class="acuity-badge acuity-critical" id="emrStatusBadge">Passive Alerting</span>
           </div>
           <div class="pane-sub">
             Results return after doctors go home. Alerts sit unread in individual inboxes until the next morning or shift.
           </div>
 
           <div class="failure-callout">
-            <div class="failure-stat" id="withoutVigilLost">3 Patients Fell Through The Cracks</div>
-            <div class="failure-detail">Severe high potassium and heart injury unaddressed for an average of 14 hours.</div>
+            <div class="failure-stat" id="withoutVigilLost">0 Patients Lost</div>
+            <div class="failure-detail" id="withoutVigilDetail">Night shift in progress. Awaiting post-discharge lab returns...</div>
           </div>
 
-          <div class="event-stack">
-            <div class="event-item" style="background-color: var(--color-critical-subtle); border-color: var(--color-critical-border);">
-              <div class="event-item-top">
-                <span class="event-patient">7:14 PM &bull; Martha Reeve</span>
-                <span style="font-size: 11px; font-weight: 700; color: var(--color-critical-dark);">0 Calls Made</span>
-              </div>
-              <p class="event-desc">
-                Lab alert landed in Dr. Okonkwo's closed inbox 14 minutes after shift ended. Patient remained home unmonitored.
-              </p>
-            </div>
-
-            <div class="event-item" style="background-color: var(--color-critical-subtle); border-color: var(--color-critical-border);">
-              <div class="event-item-top">
-                <span class="event-patient">10:30 PM &bull; Samuel Okai</span>
-                <span style="font-size: 11px; font-weight: 700; color: var(--color-critical-dark);">Unread Overnight</span>
-              </div>
-              <p class="event-desc">
-                Troponin 2.4 ng/mL sat unacknowledged until 8:45 AM the next day (10+ hour diagnostic delay).
-              </p>
-            </div>
-
-            <div class="event-item" style="background-color: var(--color-critical-subtle); border-color: var(--color-critical-border);">
-              <div class="event-item-top">
-                <span class="event-patient">2:00 AM &bull; Amina Diallo</span>
-                <span style="font-size: 11px; font-weight: 700; color: var(--color-critical-dark);">Lost Referral</span>
-              </div>
-              <p class="event-desc">
-                Oncology referral quietly exceeded 55 hours unbooked with zero automated notification.
-              </p>
-            </div>
+          <div class="event-stack" id="withoutVigilStream">
+            <!-- Dynamically populated during 24h simulation -->
           </div>
         </div>
 
