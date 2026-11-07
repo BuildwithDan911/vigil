@@ -1,0 +1,16 @@
+{
+  "urgency": "urgent",
+  "owner": "dr.okonkwo",
+  "reason": "A sensitive viral-load result returned after discharge. The patient asked us not to share sensitive details by text.",
+  "call_script": "Hello, this is Harbourview General calling Chika Eze. Please phone the clinic today on 0000 000 000 about a recent test.",
+  "sms_draft": "Harbourview General. Please call the clinic about a recent test. Do not include the test name or the value.",
+  "consent_recommendation": "redact",
+  "confidence": 0.86,
+  "_meta": {
+    "recorded": true,
+    "accession": "ACC-P09-HIVVL",
+    "model": "replay",
+    "tokens": 0,
+    "promptVersion": "loop-decision-v1"
+  }
+}

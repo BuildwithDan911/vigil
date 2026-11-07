@@ -1,0 +1,16 @@
+{
+  "urgency": "routine",
+  "owner": "dr.okonkwo",
+  "reason": "A mildly high potassium returned after discharge for Jules Addo.",
+  "call_script": "Hello, this is Harbourview General calling Jules Addo about a recent blood test. Please phone us on 0000 000 000.",
+  "sms_draft": "Harbourview General: please call us about a recent test on 0000 000 000.",
+  "consent_recommendation": "send",
+  "confidence": 0.86,
+  "_meta": {
+    "recorded": true,
+    "accession": "ACC-P30-K",
+    "model": "replay",
+    "tokens": 0,
+    "promptVersion": "loop-decision-v1"
+  }
+}

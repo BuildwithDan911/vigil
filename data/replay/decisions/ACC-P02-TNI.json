@@ -1,0 +1,16 @@
+{
+  "urgency": "critical",
+  "owner": "dr.okonkwo",
+  "reason": "A very high troponin came back after Samuel Okai was discharged.",
+  "call_script": "Hello, this is Harbourview General calling Samuel Okai about a recent heart-blood test. Please phone us now on 0000 000 000.",
+  "sms_draft": "Harbourview General: please call us now about a recent test on 0000 000 000.",
+  "consent_recommendation": "send",
+  "confidence": 0.86,
+  "_meta": {
+    "recorded": true,
+    "accession": "ACC-P02-TNI",
+    "model": "replay",
+    "tokens": 0,
+    "promptVersion": "loop-decision-v1"
+  }
+}

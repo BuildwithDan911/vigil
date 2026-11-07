@@ -1,0 +1,7 @@
+# Default line endings to LF across OSes to protect container scripts
+* text=auto eol=lf
+
+# Windows PowerShell scripts require CRLF
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf

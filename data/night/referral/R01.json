@@ -1,0 +1,13 @@
+{
+  "case_id": "R01",
+  "referralId": "REF-ONC-001",
+  "patientId": "P03",
+  "referredTo": "Harbourview Oncology",
+  "specialty": "oncology",
+  "sentAt": "2026-11-02T07:00:00",
+  "bookingStatus": "none",
+  "share_results_sms": true,
+  "expected_action": "chase",
+  "opens_loop": true,
+  "final_level": "urgent"
+}

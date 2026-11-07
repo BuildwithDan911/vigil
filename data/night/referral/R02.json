@@ -1,0 +1,13 @@
+{
+  "case_id": "R02",
+  "referralId": "REF-ORT-002",
+  "patientId": "P04",
+  "referredTo": "City Orthopaedics",
+  "specialty": "orthopaedics",
+  "sentAt": "2026-11-01T11:00:00",
+  "bookingStatus": "booked",
+  "share_results_sms": true,
+  "expected_action": null,
+  "opens_loop": false,
+  "final_level": "skip"
+}

@@ -1,0 +1,3 @@
+zn "IRISAPP"
+write "VIGIL_NS_OK",!
+halt

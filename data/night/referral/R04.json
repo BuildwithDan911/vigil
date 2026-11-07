@@ -1,0 +1,14 @@
+{
+  "case_id": "R04",
+  "referralId": "REF-PSY-004",
+  "patientId": "P10",
+  "referredTo": "Community Mental Health",
+  "specialty": "psychiatry",
+  "sentAt": "2026-10-31T19:00:00",
+  "bookingStatus": "none",
+  "share_results_sms": false,
+  "expected_action": "chase",
+  "opens_loop": true,
+  "final_level": "urgent",
+  "consent": "hold"
+}

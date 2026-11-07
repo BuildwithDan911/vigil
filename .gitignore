@@ -1,0 +1,38 @@
+# Secrets and Environment Variables
+.env
+.env.local
+*.key
+*.pem
+
+# Private contest answer key with full ground truth (public template only tracked)
+data/answer-key.json
+
+# InterSystems IRIS runtime & container files
+*.cxw
+*.lck
+*.log
+iris.sys
+iris.cpf
+iris.log
+mgr/
+dev/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+venv/
+.venv/
+env/
+
+# Node / Web caches
+node_modules/
+.npm/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini

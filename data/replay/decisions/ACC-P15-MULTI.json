@@ -1,0 +1,16 @@
+{
+  "urgency": "critical",
+  "owner": "dr.okonkwo",
+  "reason": "A critically high potassium sits next to an otherwise normal blood count after discharge.",
+  "call_script": "Hello, this is Harbourview General calling Kwame Asante about a recent blood test. Please phone us today on 0000 000 000.",
+  "sms_draft": "Harbourview General: please call us today about a recent test on 0000 000 000.",
+  "consent_recommendation": "send",
+  "confidence": 0.86,
+  "_meta": {
+    "recorded": true,
+    "accession": "ACC-P15-MULTI",
+    "model": "replay",
+    "tokens": 0,
+    "promptVersion": "loop-decision-v1"
+  }
+}

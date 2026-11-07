@@ -1,0 +1,9 @@
+.git
+.github
+.env
+data/answer-key.json
+__pycache__
+*.pyc
+node_modules
+docs/screenshots
+.pytest_cache

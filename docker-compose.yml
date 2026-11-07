@@ -1,0 +1,25 @@
+services:
+  vigil:
+    build:
+      context: .
+      args:
+        IMAGE: ${IMAGE:-irishealth-community:2027.1.0AI.109.0}
+    image: vigil:latest
+    container_name: vigil-iris
+    restart: unless-stopped
+    ports:
+      - "${IRIS_SUPERSERVER_PORT:-1972}:1972"
+      - "${IRIS_WEB_PORT:-52773}:52773"
+    environment:
+      - ISC_CPF_MERGE_FILE=/home/irisowner/dev/merge.cpf
+      - VIGIL_MODE=${VIGIL_MODE:-replay}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+    volumes:
+      - ./:/home/irisowner/dev
+    healthcheck:
+      test: ["CMD-SHELL", "iris session IRIS -U IRISAPP '##class(Vigil.Setup).HealthCheck()' || exit 0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s

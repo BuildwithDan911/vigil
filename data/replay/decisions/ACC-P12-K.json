@@ -1,0 +1,16 @@
+{
+  "urgency": "urgent",
+  "owner": "dr.okonkwo",
+  "reason": "The potassium flag is still critically high, so urgency stays at least urgent even three weeks later in a young adult.",
+  "call_script": "Hello, this is Harbourview General calling Tariq Hassan about a recent blood test. Please phone us today on 0000 000 000.",
+  "sms_draft": "Harbourview General: please call us today about a recent test on 0000 000 000.",
+  "consent_recommendation": "send",
+  "confidence": 0.86,
+  "_meta": {
+    "recorded": true,
+    "accession": "ACC-P12-K",
+    "model": "replay",
+    "tokens": 0,
+    "promptVersion": "loop-decision-v1"
+  }
+}

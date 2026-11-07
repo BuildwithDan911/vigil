@@ -1,0 +1,16 @@
+{
+  "urgency": "urgent",
+  "owner": "dr.okonkwo",
+  "reason": "Referral to Harbourview Oncology was sent but never booked.",
+  "call_script": "Hello, this is Harbourview General calling about a specialist appointment that still needs booking. Please phone us on 0000 000 000.",
+  "sms_draft": "Harbourview General: please call us to book your specialist appointment on 0000 000 000.",
+  "consent_recommendation": "send",
+  "confidence": 0.86,
+  "_meta": {
+    "recorded": true,
+    "accession": "REF-ONC-001",
+    "model": "replay",
+    "tokens": 0,
+    "promptVersion": "loop-decision-v1"
+  }
+}

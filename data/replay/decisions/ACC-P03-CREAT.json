@@ -1,0 +1,16 @@
+{
+  "urgency": "urgent",
+  "owner": "dr.okonkwo",
+  "reason": "Creatinine is high three days after discharge for an 82-year-old who lives alone.",
+  "call_script": "Hello, this is Harbourview General calling Amina Diallo about a recent kidney test. Please phone us today on 0000 000 000.",
+  "sms_draft": "Harbourview General: please call us today about a recent test on 0000 000 000.",
+  "consent_recommendation": "send",
+  "confidence": 0.86,
+  "_meta": {
+    "recorded": true,
+    "accession": "ACC-P03-CREAT",
+    "model": "replay",
+    "tokens": 0,
+    "promptVersion": "loop-decision-v1"
+  }
+}

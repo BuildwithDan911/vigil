@@ -1,0 +1,8 @@
+[Actions]
+CreateNamespace=IRISAPP,Interop=1
+
+[Startup]
+SystemMode=AI Hub EAP
+
+[Security]
+PasswordHashAlgorithm=2

@@ -1,0 +1,13 @@
+{
+  "case_id": "R03",
+  "referralId": "REF-CAR-003",
+  "patientId": "P02",
+  "referredTo": "Harbourview Cardiology",
+  "specialty": "cardiology",
+  "sentAt": "2026-11-02T12:00:00",
+  "bookingStatus": "none",
+  "share_results_sms": true,
+  "expected_action": "chase",
+  "opens_loop": true,
+  "final_level": "urgent"
+}

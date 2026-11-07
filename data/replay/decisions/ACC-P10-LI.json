@@ -1,0 +1,16 @@
+{
+  "urgency": "urgent",
+  "owner": "dr.okonkwo",
+  "reason": "Lithium is above range after discharge, and this patient asked not to be texted.",
+  "call_script": "Hello, this is Harbourview General calling Yusuf Bello. Please phone us today on 0000 000 000.",
+  "sms_draft": "",
+  "consent_recommendation": "hold",
+  "confidence": 0.86,
+  "_meta": {
+    "recorded": true,
+    "accession": "ACC-P10-LI",
+    "model": "replay",
+    "tokens": 0,
+    "promptVersion": "loop-decision-v1"
+  }
+}

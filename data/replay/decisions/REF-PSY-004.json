@@ -1,0 +1,16 @@
+{
+  "urgency": "urgent",
+  "owner": "dr.okonkwo",
+  "reason": "Referral to Community Mental Health was sent but never booked.",
+  "call_script": "Hello, this is Harbourview General calling about a specialist appointment that still needs booking. Please phone us on 0000 000 000.",
+  "sms_draft": "",
+  "consent_recommendation": "hold",
+  "confidence": 0.86,
+  "_meta": {
+    "recorded": true,
+    "accession": "REF-PSY-004",
+    "model": "replay",
+    "tokens": 0,
+    "promptVersion": "loop-decision-v1"
+  }
+}

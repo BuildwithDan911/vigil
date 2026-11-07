@@ -1,0 +1,16 @@
+{
+  "urgency": "urgent",
+  "owner": "dr.okonkwo",
+  "reason": "A child has a low hemoglobin the day after going home.",
+  "call_script": "Hello, this is Harbourview General calling about Maya Owusu's recent blood test. Please could a parent phone us today on 0000 000 000.",
+  "sms_draft": "Harbourview General: please call us today about a recent test on 0000 000 000.",
+  "consent_recommendation": "send",
+  "confidence": 0.86,
+  "_meta": {
+    "recorded": true,
+    "accession": "ACC-P13-HB",
+    "model": "replay",
+    "tokens": 0,
+    "promptVersion": "loop-decision-v1"
+  }
+}
