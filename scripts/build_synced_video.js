@@ -141,7 +141,7 @@ async function run() {
   // Burn in subtitles
   console.log('\n--> Burning in stylized subtitles into final video...');
   const srtRel = 'docs/vigil_subtitles.srt';
-  const subtitleFilter = `subtitles=${srtRel}:force_style='FontSize=22,FontName=Arial,Bold=1,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,Shadow=1,MarginV=42,Alignment=2'`;
+  const subtitleFilter = `subtitles=${srtRel}:force_style='FontSize=14,FontName=Arial,Bold=1,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=1,Shadow=0.5,MarginV=30,Alignment=2'`;
   const burnCmd = `ffmpeg -y -i "${masterRaw}" -vf "${subtitleFilter}" -c:v libx264 -preset ultrafast -pix_fmt yuv420p -c:a copy "${FINAL_MP4}"`;
   execSync(burnCmd, { stdio: 'inherit' });
 
