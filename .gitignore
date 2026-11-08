@@ -32,6 +32,9 @@ env/
 node_modules/
 .npm/
 
+# Temporary video generation assets
+docs/video_assets/
+
 # OS artifacts
 .DS_Store
 Thumbs.db
