@@ -1,0 +1,119 @@
+1
+00:00:05,000 --> 00:00:08,200
+Hey everyone, I'm Daniel.
+
+2
+00:00:08,400 --> 00:00:14,200
+In modern healthcare, over 40% of critical lab results return after patients have already been discharged.
+
+3
+00:00:14,500 --> 00:00:19,200
+When clinicians clock off, these results can easily sit unnoticed in an inbox.
+
+4
+00:00:19,500 --> 00:00:23,500
+This is Vigil, built natively on InterSystems IRIS for Health.
+
+5
+00:00:23,800 --> 00:00:28,500
+Right here on our live triage queue, Vigil monitors interoperability streams in real time.
+
+6
+00:00:28,800 --> 00:00:34,200
+Martha Reeve's potassium came back dangerously high at 6.8...
+
+7
+00:00:34,400 --> 00:00:41,200
+...and Vigil immediately surfaced her case with an active countdown timer before her clinical safety window breaches.
+
+8
+00:00:41,500 --> 00:00:44,500
+Let's click into Martha Reeve's case.
+
+9
+00:00:44,800 --> 00:00:49,500
+Instead of generic alerts, Vigil drafts clinically vetted outreach in six languages.
+
+10
+00:00:49,800 --> 00:00:54,500
+Watch as we toggle to Arabic: the interface flips to native right-to-left script...
+
+11
+00:00:54,700 --> 00:01:00,000
+...with a verified English back-translation so the clinician knows exactly what the patient receives.
+
+12
+00:01:00,200 --> 00:01:05,800
+When Dr. Mensah clicks Accept Ownership, the assignment locks into IRIS instantly.
+
+13
+00:01:06,000 --> 00:01:09,000
+We can also test sudden hospital chaos.
+
+14
+00:01:09,200 --> 00:01:15,500
+With one click, we simulate an emergency arrival, automatically rerouting the case to on-duty staff.
+
+15
+00:01:15,800 --> 00:01:21,500
+And look what happens when someone attempts an adversarial prompt injection to downgrade Martha's lethal potassium:
+
+16
+00:01:21,800 --> 00:01:28,200
+Vigil's deterministic safety floor intercepts the attack, locking urgency at critical and logging the refusal.
+
+17
+00:01:28,500 --> 00:01:32,800
+Now let's switch over to our 24-hour Night Shift Replay tab.
+
+18
+00:01:33,000 --> 00:01:38,000
+Watch what happens when we start the simulation: we can scrub through an entire 24-hour cycle.
+
+19
+00:01:38,200 --> 00:01:42,200
+Notice the contrast on the right: without Vigil,
+
+20
+00:01:42,400 --> 00:01:47,500
+three critical patients slipped through the cracks overnight due to fatigue and delays.
+
+21
+00:01:47,800 --> 00:01:53,200
+With Vigil, 100% of critical handoffs were intercepted and acknowledged within their clinical window.
+
+22
+00:01:53,500 --> 00:01:58,800
+Directly addressing Idea DPI-I-689 on the InterSystems Ideas Portal,
+
+23
+00:01:59,000 --> 00:02:05,200
+every single AI decision and clinical handoff is sealed into a tamper-evident SHA-256 hash chain inside IRIS.
+
+24
+00:02:05,500 --> 00:02:11,000
+When we verify the ledger, the entire chain confirms green.
+
+25
+00:02:11,200 --> 00:02:18,500
+And if anyone attempts unauthorized database tampering, Vigil instantly flags the exact corrupted block and halts execution.
+
+26
+00:02:18,800 --> 00:02:24,500
+Moving to our Privacy and Consent Gateway, Vigil enforces strict patient communication preferences.
+
+27
+00:02:24,800 --> 00:02:32,000
+Sensitive diagnostic details are automatically redacted before external notifications are dispatched, ensuring zero patient privacy leaks.
+
+28
+00:02:32,300 --> 00:02:37,500
+Built end-to-end on InterSystems IRIS for Health Interoperability,
+
+29
+00:02:37,800 --> 00:02:44,000
+Vigil transforms disconnected clinical feeds into an autonomous, verifiable safety net.
+
+30
+00:02:44,200 --> 00:02:48,000
+Zero patients lost. Thanks for watching!
