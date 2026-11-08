@@ -1,5 +1,9 @@
 # Vigil for IRIS for Health — Online Demo Deployment Guide
 
+[![Watch the Vigil Demo Walkthrough](thumbnail.png)](https://youtu.be/LjiZv-xNtEk)
+
+> 📺 **Video Walkthrough**: Watch the 3-minute full HD video walkthrough on YouTube: [**https://youtu.be/LjiZv-xNtEk**](https://youtu.be/LjiZv-xNtEk)
+
 This guide documents how to host **Vigil for IRIS for Health** on a public cloud VM (AWS EC2, Google Cloud Compute Engine, Azure VM, DigitalOcean Droplet, or Hetzner Cloud) for judges and evaluators to interact with the live running container.
 
 ---

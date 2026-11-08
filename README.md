@@ -13,9 +13,10 @@
 
 ## 📺 3-Minute Video Walkthrough
 
-[![Watch the Vigil Demo Walkthrough](docs/thumbnail.png)](docs/vigil_demo_walkthrough.mp4)
+[![Watch the Vigil Demo Walkthrough](docs/thumbnail.png)](https://youtu.be/LjiZv-xNtEk)
 
-> 🎥 **Demo Walkthrough Video**: [`docs/vigil_demo_walkthrough.mp4`](docs/vigil_demo_walkthrough.mp4) *(Full 1080p HD • Natural Human Narration • Pixel-Calibrated Subtitles)*  
+> 🎥 **Watch on YouTube**: [**https://youtu.be/LjiZv-xNtEk**](https://youtu.be/LjiZv-xNtEk) *(Full 1080p HD • Natural Human Narration • Pixel-Calibrated Subtitles)*  
+> 💾 **Local Video File**: [`docs/vigil_demo_walkthrough.mp4`](docs/vigil_demo_walkthrough.mp4) (Committed in repo)  
 > 💡 **InterSystems Community Idea**: Implements [DPI-I-689](https://ideas.intersystems.com/ideas/DPI-I-689) (*"Use InterSystems Interoperability as a Traceability tool for GenAI LLM pipelines"*).  
 > ⚡ **Quick Online Evaluation**: Zero API keys needed; instant 24h hospital night shift replay built directly into the UI.
 
@@ -205,7 +206,7 @@ Every bonus below is **fully implemented in working code** and validated by our 
 | **Online Demo Guide** | **2** | [`docs/ONLINE_DEMO.md`](docs/ONLINE_DEMO.md) | Step-by-step public cloud VM deployment guide for evaluators. |
 | **First DC Article Draft** | **2** | [`docs/ARTICLE-1.md`](docs/ARTICLE-1.md) | *"Building a Patient-Safety Agent on IRIS AI Hub: Lessons from EAP Build 109 & DPI-I-689"*. |
 | **Second DC Article Draft** | **1** | [`docs/ARTICLE-2.md`](docs/ARTICLE-2.md) | *"Closing the Diagnostic Loop: Dual Workflows, SHA-256 Ledgers, and Without Vigil Contras"*. |
-| **YouTube Video & Script** | **3** | [`docs/vigil_demo_walkthrough.mp4`](docs/vigil_demo_walkthrough.mp4), [`docs/VIDEO-SCRIPT-V2.md`](docs/VIDEO-SCRIPT-V2.md) | Full 1080p demo walkthrough video with human narration & pixel subtitles + scene-by-scene script. |
+| **YouTube Video & Script** | **3** | [**YouTube Video**](https://youtu.be/LjiZv-xNtEk), [`docs/vigil_demo_walkthrough.mp4`](docs/vigil_demo_walkthrough.mp4), [`docs/VIDEO-SCRIPT-V2.md`](docs/VIDEO-SCRIPT-V2.md) | Full 1080p demo walkthrough video with human narration & pixel subtitles + scene-by-scene script. |
 | **Total Claimed Bonuses** | **28** | *(All verified passing in automated test harness)* |
 
 ---
