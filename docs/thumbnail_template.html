@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    body {
+      width: 1280px;
+      height: 720px;
+      background: radial-gradient(circle at 80% 20%, #1e1b4b 0%, #090d16 60%, #030712 100%);
+      color: #ffffff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 60px 70px;
+      position: relative;
+    }
+
+    /* Ambient glow elements */
+    .glow-cyan {
+      position: absolute;
+      top: -100px;
+      left: 100px;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(14, 165, 233, 0.25) 0%, transparent 70%);
+      filter: blur(50px);
+      z-index: 1;
+    }
+    .glow-red {
+      position: absolute;
+      bottom: -80px;
+      right: 150px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(239, 68, 68, 0.2) 0%, transparent 70%);
+      filter: blur(60px);
+      z-index: 1;
+    }
+    .grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      z-index: 2;
+    }
+
+    .content-wrap {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+    }
+
+    /* Top bar */
+    .top-badge-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(12px);
+      padding: 8px 18px;
+      border-radius: 9999px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #38bdf8;
+    }
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      background: #38bdf8;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #38bdf8;
+    }
+    .contest-pill {
+      background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Middle section: Headline + Floating Cards */
+    .hero-split {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 40px;
+      margin-top: 20px;
+    }
+
+    .hero-text {
+      flex: 1.1;
+    }
+    .main-title {
+      font-size: 64px;
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -1.5px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .gradient-text-red {
+      background: linear-gradient(135deg, #f87171 0%, #ef4444 50%, #dc2626 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .gradient-text-cyan {
+      background: linear-gradient(135deg, #38bdf8 0%, #60a5fa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .sub-title {
+      font-size: 22px;
+      font-weight: 500;
+      color: #94a3b8;
+      line-height: 1.4;
+      max-width: 580px;
+    }
+
+    /* Right side cards showcase */
+    .cards-col {
+      flex: 0.9;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: relative;
+    }
+
+    .alert-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 2px solid #ef4444;
+      border-radius: 18px;
+      padding: 22px 26px;
+      box-shadow: 0 20px 40px rgba(239, 68, 68, 0.25), 0 0 25px rgba(239, 68, 68, 0.2);
+      backdrop-filter: blur(16px);
+      transform: rotate(-1.5deg);
+    }
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .urgency-badge {
+      background: #ef4444;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 5px 12px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .timer-badge {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: monospace;
+    }
+    .patient-name {
+      font-size: 24px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+    .lab-result {
+      font-size: 18px;
+      font-weight: 600;
+      color: #f87171;
+    }
+
+    .ledger-badge-card {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: 14px;
+      padding: 16px 22px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transform: rotate(1.5deg) translateX(20px);
+    }
+    .check-icon {
+      width: 32px;
+      height: 32px;
+      background: #10b981;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 900;
+      font-size: 18px;
+    }
+    .ledger-text-main {
+      font-size: 16px;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+    .ledger-text-sub {
+      font-size: 13px;
+      font-weight: 500;
+      color: #10b981;
+      font-family: monospace;
+    }
+
+    /* Bottom strip */
+    .bottom-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 20px;
+    }
+    .iris-logo-text {
+      font-size: 18px;
+      font-weight: 700;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .iris-pill {
+      background: #4338ca;
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .stat-pills {
+      display: flex;
+      gap: 16px;
+    }
+    .stat-pill {
+      font-size: 14px;
+      font-weight: 600;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .stat-pill strong {
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-cyan"></div>
+  <div class="glow-red"></div>
+  <div class="grid-lines"></div>
+
+  <div class="content-wrap">
+    <!-- Top row -->
+    <div class="top-badge-row">
+      <div class="brand-pill">
+        <div class="pulse-dot"></div>
+        VIGIL
+      </div>
+      <div class="contest-pill">
+        InterSystems IRIS for Health
+      </div>
+    </div>
+
+    <!-- Hero Content -->
+    <div class="hero-split">
+      <div class="hero-text">
+        <h1 class="main-title">
+          Never Lose a Patient<br>
+          <span class="gradient-text-red">Post-Discharge</span>
+        </h1>
+        <p class="sub-title">
+          Autonomous Diagnostic Safety Net & Traceable LLM Pipeline on InterSystems Interoperability.
+        </p>
+      </div>
+
+      <!-- Right Column Visual Cards -->
+      <div class="cards-col">
+        <!-- Floating Critical Lab Card -->
+        <div class="alert-card">
+          <div class="card-header-row">
+            <span class="urgency-badge">Critical Triage</span>
+            <span class="timer-badge">SLA: 01:48:12</span>
+          </div>
+          <div class="patient-name">Martha Reeve (Age 64)</div>
+          <div class="lab-result">Potassium: 6.8 mmol/L [CRITICAL HIGH]</div>
+        </div>
+
+        <!-- Floating Ledger Card -->
+        <div class="ledger-badge-card">
+          <div class="check-icon">&#10003;</div>
+          <div>
+            <div class="ledger-text-main">SHA-256 Cryptographic Chain</div>
+            <div class="ledger-text-sub">100% Verified • Idea DPI-I-689</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="bottom-bar">
+      <div class="iris-logo-text">
+        Powered by <span class="iris-pill">InterSystems IRIS</span> Interoperability Workflows
+      </div>
+      <div class="stat-pills">
+        <div class="stat-pill"><strong>100%</strong> Loop Closure</div>
+        <div class="stat-pill"><strong>0</strong> Patients Lost</div>
+        <div class="stat-pill"><strong>6</strong> Languages RTL</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
