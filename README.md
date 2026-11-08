@@ -80,18 +80,7 @@ Invoke-RestMethod -Uri "http://localhost:52773/vigil/api/info"
 Open your browser to:  
 👉 **`http://localhost:8000/`** *(or through the IRIS Web Gateway at `http://localhost:52773/vigil/`)*
 
-```
-+-----------------------------------------------------------------------------------------------+
-|  VIGIL FOR IRIS FOR HEALTH   [Autonomous Safety Net: Active]  [Replay Clock: 19:00 -> 07:00]  |
-+-----------------------------------------------------------------------------------------------+
-|  [All Alerts (5)]   [Needs Attention (2)]   [Doctor Calling (1)]   [Escalated (1)]   [Resolved] |
-+-----------------------------------------------------------------------------------------------+
-|  PRIORITY | PATIENT        | TEST / REFERRAL      | WHY URGENT          | DOCTOR    | TIMER   |
-|  CRITICAL | Martha Reeve   | Potassium 6.8 mmol/L | Post-discharge peak | Dr.Mensah | 01h 48m |
-|  URGENT   | Amina Diallo   | Oncology Consult     | 14d unbooked breach | Dr.Mensah | 06h 12m |
-|  URGENT   | David Kim      | Troponin I 0.18 ng/mL| Post-discharge rise | Dr.Mensah | 07h 40m |
-+-----------------------------------------------------------------------------------------------+
-```
+![Vigil Clinical Active Alerts Board](docs/screenshots/board-1440.png)
 
 ---
 
@@ -104,6 +93,8 @@ Click **"Start Night Shift"** in the top navigation bar:
 - **Split-Screen Contrast**:
   - **Left (With Vigil)**: Critical labs intercepted, Dr. Mensah assigned, SLA timers running, callback scripts drafted.
   - **Right (Without Vigil)**: Counter ticks up: **3 Patients Lost to Follow-Up** (fatal hyperkalemia and unmonitored troponin sitting in empty off-shift inboxes).
+
+![24-Hour Night Shift Contrast Simulation](docs/screenshots/nightshift-split-1440.png)
 
 ### Demo 2: Adversarial AI Downgrade Stress-Test
 Click on Martha Reeve (`VGL-01-REEVE`) and click **"Test Adversarial Downgrade"**:
@@ -120,12 +111,16 @@ Click on Martha Reeve (`VGL-01-REEVE`) in the table:
 - Switch to **French (`fr`)** or **Spanish (`es`)**: The communication script adapts to the patient's primary language.
 - **Clinician Safety Assurance**: The **English back-translation** remains permanently displayed alongside the translated text so the reviewing doctor can verify clinical accuracy before placing the call.
 
+![Multilingual Arabic RTL Script with Back-Translation](docs/screenshots/detail-1440.png)
+
 ### Demo 4: Cryptographic Ledger Verification & Tamper Simulation
 Click the **"Loop Ledger"** tab:
 - Click **"Verify Chain"**: A green badge confirms that all block SHA-256 hashes are intact and cryptographically linked.
 - Click **"Simulate Data Tamper"**: Mutates a byte in block #2.  
   An instant warning displays: **`⚠️ Tamper Detected: Block #2 Hash Mismatch (PrevHash broken)`**.  
   This proves Vigil guarantees medico-legal auditability for hospital risk management.
+
+![Cryptographic SHA-256 Ledger & Verification](docs/screenshots/report-1440.png)
 
 ---
 
