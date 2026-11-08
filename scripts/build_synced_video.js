@@ -138,11 +138,10 @@ async function run() {
   execSync(rawCmd, { stdio: 'inherit' });
   console.log(`    Raw master created: ${masterRaw}`);
 
-  // Burn in subtitles
-  console.log('\n--> Burning in stylized subtitles into final video...');
-  const srtRel = 'docs/vigil_subtitles.srt';
-  const subtitleFilter = `subtitles=${srtRel}:force_style='FontSize=10,FontName=Arial,Bold=0,PrimaryColour=&H00FFFFFF,Outline=0,Shadow=0,MarginV=25,Alignment=2'`;
-  const burnCmd = `ffmpeg -y -i "${masterRaw}" -vf "${subtitleFilter}" -c:v libx264 -preset ultrafast -pix_fmt yuv420p -c:a copy "${FINAL_MP4}"`;
+  // Burn in subtitles using pixel-calibrated ASS with translucent pill box
+  console.log('\n--> Burning in calibrated subtitles into final video...');
+  const assRel = 'docs/vigil_subtitles.ass';
+  const burnCmd = `ffmpeg -y -i "${masterRaw}" -vf "subtitles=${assRel}" -c:v libx264 -preset ultrafast -pix_fmt yuv420p -c:a copy "${FINAL_MP4}"`;
   execSync(burnCmd, { stdio: 'inherit' });
 
   const finalDur = getDuration(FINAL_MP4);

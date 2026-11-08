@@ -1,0 +1,44 @@
+[Script Info]
+; Vigil Walkthrough Subtitles - Clean Sleek YouTube Style
+ScriptType: v4.00+
+PlayResX: 1920
+PlayResY: 1080
+ScaledBorderAndShadow: yes
+YCbCr Matrix: None
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,22,&H00FFFFFF,&H000000FF,&H00000000,&H90000000,0,0,0,0,100,100,0,0,4,0,0,2,40,40,40,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:05.00,0:00:08.20,Default,,0,0,0,,Hey everyone, I'm Daniel.
+Dialogue: 0,0:00:08.40,0:00:14.20,Default,,0,0,0,,In modern healthcare, over 40% of critical lab results return after patients have already been discharged.
+Dialogue: 0,0:00:14.50,0:00:19.20,Default,,0,0,0,,When clinicians clock off, these results can easily sit unnoticed in an inbox.
+Dialogue: 0,0:00:19.50,0:00:23.50,Default,,0,0,0,,This is Vigil, built natively on InterSystems IRIS for Health.
+Dialogue: 0,0:00:23.80,0:00:28.50,Default,,0,0,0,,Right here on our live triage queue, Vigil monitors interoperability streams in real time.
+Dialogue: 0,0:00:28.80,0:00:34.20,Default,,0,0,0,,Martha Reeve's potassium came back dangerously high at 6.8...
+Dialogue: 0,0:00:34.40,0:00:41.20,Default,,0,0,0,,...and Vigil immediately surfaced her case with an active countdown timer before her clinical safety window breaches.
+Dialogue: 0,0:00:41.50,0:00:44.50,Default,,0,0,0,,Let's click into Martha Reeve's case.
+Dialogue: 0,0:00:44.80,0:00:49.50,Default,,0,0,0,,Instead of generic alerts, Vigil drafts clinically vetted outreach in six languages.
+Dialogue: 0,0:00:49.80,0:00:54.50,Default,,0,0,0,,Watch as we toggle to Arabic: the interface flips to native right-to-left script...
+Dialogue: 0,0:00:54.70,0:01:00.00,Default,,0,0,0,,...with a verified English back-translation so the clinician knows exactly what the patient receives.
+Dialogue: 0,0:01:00.20,0:01:05.80,Default,,0,0,0,,When Dr. Mensah clicks Accept Ownership, the assignment locks into IRIS instantly.
+Dialogue: 0,0:01:06.00,0:01:09.00,Default,,0,0,0,,We can also test sudden hospital chaos.
+Dialogue: 0,0:01:09.20,0:01:15.50,Default,,0,0,0,,With one click, we simulate an emergency arrival, automatically rerouting the case to on-duty staff.
+Dialogue: 0,0:01:15.80,0:01:21.50,Default,,0,0,0,,And look what happens when someone attempts an adversarial prompt injection to downgrade Martha's lethal potassium:
+Dialogue: 0,0:01:21.80,0:01:28.20,Default,,0,0,0,,Vigil's deterministic safety floor intercepts the attack, locking urgency at critical and logging the refusal.
+Dialogue: 0,0:01:28.50,0:01:32.80,Default,,0,0,0,,Now let's switch over to our 24-hour Night Shift Replay tab.
+Dialogue: 0,0:01:33.00,0:01:38.00,Default,,0,0,0,,Watch what happens when we start the simulation: we can scrub through an entire 24-hour cycle.
+Dialogue: 0,0:01:38.20,0:01:42.20,Default,,0,0,0,,Notice the contrast on the right: without Vigil,
+Dialogue: 0,0:01:42.40,0:01:47.50,Default,,0,0,0,,three critical patients slipped through the cracks overnight due to fatigue and delays.
+Dialogue: 0,0:01:47.80,0:01:53.20,Default,,0,0,0,,With Vigil, 100% of critical handoffs were intercepted and acknowledged within their clinical window.
+Dialogue: 0,0:01:53.50,0:01:58.80,Default,,0,0,0,,Directly addressing Idea DPI-I-689 on the InterSystems Ideas Portal,
+Dialogue: 0,0:01:59.00,0:02:05.20,Default,,0,0,0,,every single AI decision and clinical handoff is sealed into a tamper-evident SHA-256 hash chain inside IRIS.
+Dialogue: 0,0:02:05.50,0:02:11.00,Default,,0,0,0,,When we verify the ledger, the entire chain confirms green.
+Dialogue: 0,0:02:11.20,0:02:18.50,Default,,0,0,0,,And if anyone attempts unauthorized database tampering, Vigil instantly flags the exact corrupted block and halts execution.
+Dialogue: 0,0:02:18.80,0:02:24.50,Default,,0,0,0,,Moving to our Privacy and Consent Gateway, Vigil enforces strict patient communication preferences.
+Dialogue: 0,0:02:24.80,0:02:32.00,Default,,0,0,0,,Sensitive diagnostic details are automatically redacted before external notifications are dispatched, ensuring zero patient privacy leaks.
+Dialogue: 0,0:02:32.30,0:02:37.50,Default,,0,0,0,,Built end-to-end on InterSystems IRIS for Health Interoperability,
+Dialogue: 0,0:02:37.80,0:02:44.00,Default,,0,0,0,,Vigil transforms disconnected clinical feeds into an autonomous, verifiable safety net.
+Dialogue: 0,0:02:44.20,0:02:48.00,Default,,0,0,0,,Zero patients lost. Thanks for watching!
