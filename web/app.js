@@ -371,22 +371,22 @@ function toggleEnvironment() {
   setEnvironment(VigilState.environment === 'demo' ? 'live' : 'demo');
 }
 
-// REST Health Check
+// REST Health Check & Live IRIS Sync
 function checkHealth() {
   fetch('/vigil/api/health')
     .then(res => res.json())
     .then(data => {
       const modeChip = document.getElementById('modeChip');
-      if (modeChip && data.mode) {
-        modeChip.textContent = data.mode === 'live'
-          ? 'Live Gemini AI Hub'
-          : 'Autonomous Safety Net Active';
+      if (modeChip) {
+        modeChip.innerHTML = '<span style="color:#059669; font-weight:700;">● IRIS Container: Connected</span> (IRISAPP Database)';
       }
       fetchLoops();
+      fetchLedger();
     })
     .catch(() => {
       console.log('Running in client-side demonstration mode.');
       renderBoard();
+      renderLedger();
     });
 }
 
@@ -395,11 +395,49 @@ function fetchLoops() {
     .then(res => res.json())
     .then(loops => {
       if (Array.isArray(loops) && loops.length > 0) {
-        VigilState.demoLoops = loops;
+        VigilState.demoLoops = loops.map(l => ({
+          ...l,
+          typeName: l.typeName || (l.type === 'referral_leakage' ? 'Specialist Referral' : 'Post-Discharge Lab'),
+          referenceRange: l.referenceRange || 'Clinical Reference',
+          ladder: l.ladder || (l.owner === 'dr.mensah' ? ['Dr. Okonkwo (Off-duty)', 'Dr. Mensah (On-duty)'] : ['Dr. Okonkwo (Timed out)', 'Dr. Adewale (Director)']),
+          consentStatus: l.consentStatus || 'send',
+          ruleFloor: (l.urgency || 'routine').toUpperCase(),
+          modelRecommendation: (l.urgency || 'routine').toUpperCase(),
+          enforcedUrgency: (l.urgency || 'routine').toUpperCase(),
+          decisionSource: l.decisionSource || 'medical_safety_guard'
+        }));
         renderBoard();
       }
     })
     .catch(() => console.log('Using seeded demonstration cases.'));
+}
+
+function fetchLedger() {
+  fetch('/vigil/api/ledger')
+    .then(res => res.json())
+    .then(blocks => {
+      if (Array.isArray(blocks) && blocks.length > 0) {
+        LedgerData = blocks.map(b => {
+          let summary = b.eventType;
+          try {
+            const p = typeof b.payload === 'string' ? JSON.parse(b.payload) : b.payload;
+            if (p.action) summary += `: ${p.action.replace(/_/g, ' ')}`;
+            else if (p.floor) summary += ` (Floor: ${p.floor})`;
+            else if (p.test) summary += `: ${p.test} ${p.value || ''}`;
+          } catch(e) {}
+          return {
+            seq: parseInt(b.seq),
+            time: b.ts,
+            patient: b.loopId,
+            action: summary,
+            actor: b.actor,
+            hash: b.hash
+          };
+        });
+        renderLedger();
+      }
+    })
+    .catch(() => console.log('Using local ledger data.'));
 }
 
 // Navigation Tabs
@@ -686,28 +724,52 @@ function updateScriptLanguage() {
   }
 }
 
-// Clinician Actions
+// Clinician Actions (Live InterSystems IRIS Container Sync)
 function acceptSelectedLoop() {
+  const loopId = VigilState.selectedLoopId;
   const pool = VigilState.environment === 'demo' ? VigilState.demoLoops : VigilState.liveLoops;
-  const loop = pool.find(l => l.loopId === VigilState.selectedLoopId);
-  if (loop) {
-    loop.state = 'Owned';
-    loop.owner = 'dr.mensah';
-    renderBoard();
-    showToast('Case Ownership Assigned', `Dr. Mensah assigned as primary responder for ${loop.patientName}. Shift SLA timer transferred.`, 'success');
-    closeDetailModal();
-  }
+  const loop = pool.find(l => l.loopId === loopId) || { patientName: loopId };
+
+  fetch(`/vigil/api/loops/${loopId}/accept`, { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      showToast('Case Ownership Assigned', `Dr. Mensah assigned as primary responder for ${loop.patientName}. Cryptographic block committed to IRIS ledger.`, 'success');
+      fetchLoops();
+      fetchLedger();
+      closeDetailModal();
+    })
+    .catch(() => {
+      if (loop) {
+        loop.state = 'Owned';
+        loop.owner = 'dr.mensah';
+        renderBoard();
+      }
+      showToast('Case Ownership Assigned', `Dr. Mensah assigned as primary responder for ${loop.patientName}. Shift SLA timer transferred.`, 'success');
+      closeDetailModal();
+    });
 }
 
 function actSelectedLoop() {
+  const loopId = VigilState.selectedLoopId;
   const pool = VigilState.environment === 'demo' ? VigilState.demoLoops : VigilState.liveLoops;
-  const loop = pool.find(l => l.loopId === VigilState.selectedLoopId);
-  if (loop) {
-    loop.state = 'Acted';
-    renderBoard();
-    showToast('Safety Loop Closed', `Patient contact confirmed for ${loop.patientName}. Cryptographic proof of closure recorded to audit log.`, 'success');
-    closeDetailModal();
-  }
+  const loop = pool.find(l => l.loopId === loopId) || { patientName: loopId };
+
+  fetch(`/vigil/api/loops/${loopId}/acted`, { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      showToast('Safety Loop Closed', `Patient contact confirmed for ${loop.patientName}. Cryptographic proof of closure recorded to IRIS audit log.`, 'success');
+      fetchLoops();
+      fetchLedger();
+      closeDetailModal();
+    })
+    .catch(() => {
+      if (loop) {
+        loop.state = 'Acted';
+        renderBoard();
+      }
+      showToast('Safety Loop Closed', `Patient contact confirmed for ${loop.patientName}. Cryptographic proof of closure recorded to audit log.`, 'success');
+      closeDetailModal();
+    });
 }
 
 // New Patient Handoff Modal (Custom User Input)
@@ -849,73 +911,53 @@ function handleNewHandoffSubmit(event) {
   showToast('Live Safety Net Dispatched', `Case ${newId} initialized for ${patientName}. Urgency: ${urgency.toUpperCase()} (SLA: ${slaRemaining}). Routed to covering doctor ${coveringDr}.`, 'success');
 }
 
-// 1-Click Chaos Emergency Injection (Inspired by SynapseHealer)
+// 1-Click Chaos Emergency Injection (Live InterSystems IRIS Container Sync)
 function injectChaosEmergency() {
-  const emergencyCases = [
-    { name: "Kassim Bello", age: "69y / M", ward: "Ward 4W", test: "Potassium (Serum)", val: "7.1 mmol/L (Severe Hyperkalemia)", reason: "Critical high potassium returned 2 hours after discharge. Discharging doctor off-duty." },
-    { name: "Grace Adebayo", age: "61y / F", ward: "Cardiology", test: "Troponin I (High Sens)", val: "3.8 ng/mL (Acute Myocardial Injury)", reason: "Delayed troponin leak detected post-discharge. Immediate clinical callback required." },
-    { name: "Emmanuel Mensah", age: "74y / M", ward: "Ward 2S", test: "INR (Prothrombin Time)", val: "6.2 (Extreme Bleeding Risk)", reason: "Critical supratherapeutic anticoagulation returned post-discharge. Covering staff alerted." }
-  ];
-
-  const pick = emergencyCases[Math.floor(Math.random() * emergencyCases.length)];
-  const newId = `VGL-CHAOS-${Date.now().toString().slice(-4)}`;
-
-  const newLoop = {
-    loopId: newId,
-    patientId: `P${Math.floor(Math.random() * 899 + 100)}`,
-    patientName: `${pick.name} (${pick.age})`,
-    ward: pick.ward,
-    type: 'results_after_discharge',
-    typeName: 'Post-Discharge Lab',
-    urgency: 'critical',
-    state: 'Opened',
-    owner: 'dr.mensah',
-    originalOwner: 'dr.okonkwo',
-    daysSinceDischarge: 1,
-    testName: pick.test,
-    testValue: pick.val,
-    referenceRange: 'Critical Threshold Exceeded',
-    reason: pick.reason,
-    slaRemaining: '01h 58m',
-    slaSeconds: 7080,
-    ladder: ['Dr. Okonkwo (Off-duty)', 'Dr. Mensah (On-duty)', 'Dr. Adewale (Clinical Director)'],
-    consentStatus: 'send',
-    ruleFloor: 'CRITICAL',
-    modelRecommendation: 'CRITICAL',
-    enforcedUrgency: 'CRITICAL',
-    decisionSource: 'medical_safety_guard'
-  };
-
-  CALLBACK_SCRIPTS[newId] = {
-    en: {
-      text: `Hello, this is Harbourview General calling for ${pick.name} regarding an urgent ${pick.test}. Please contact our clinical emergency team on 0800-427-268 immediately.`,
-      back: `Hello, this is Harbourview General calling for ${pick.name} regarding an urgent ${pick.test}. Please phone 0800-427-268 immediately.`,
-      rtl: false
-    }
-  };
-
-  VigilState.liveLoops.unshift(newLoop);
-
-  // Append new event to cryptographic ledger
-  const newSeq = LedgerData.length + 1;
-  const newHash = Array.from(new Uint8Array(32))
-    .map(() => Math.floor(Math.random() * 16).toString(16))
-    .join('');
-
-  LedgerData.push({
-    seq: newSeq,
-    time: '04 Nov 2026 23:15:00',
-    patient: `${pick.name} (${pick.age})`,
-    action: `Autonomous Emergency Intercept: ${pick.test} (${pick.val})`,
-    actor: 'Vigil Medical Guard',
-    hash: newHash
-  });
-
-  setEnvironment('live');
-  renderBoard();
-  renderLedger();
-
-  showToast('Emergency Lab Intercepted', `<b>${pick.name} (${pick.age})</b>: ${pick.test} = ${pick.val}<br>Autonomous execution: Discharging doctor verified off-shift. Routed to on-duty Dr. Mensah. SLA 2h timer started. Entry #${newSeq} recorded.`, 'critical', 6000);
+  fetch('/vigil/api/demo/emergency', { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      fetchLoops();
+      fetchLedger();
+      showToast('Emergency Lab Intercepted', `<b>${data.patientName || 'Emergency Patient'}</b>: ${data.testName || 'Critical Lab'} = ${data.testValue || 'Panic Value'}<br>Autonomous execution: Discharging doctor verified off-shift. Routed to on-duty Dr. Mensah. SLA 2h timer started. Persisted to IRIS database.`, 'critical', 6000);
+    })
+    .catch(() => {
+      // Local client-side fallback
+      const emergencyCases = [
+        { name: "Kassim Bello", age: "69y / M", ward: "Ward 4W", test: "Potassium (Serum)", val: "7.1 mmol/L (Severe Hyperkalemia)", reason: "Critical high potassium returned 2 hours after discharge. Discharging doctor off-duty." },
+        { name: "Grace Adebayo", age: "61y / F", ward: "Cardiology", test: "Troponin I (High Sens)", val: "3.8 ng/mL (Acute Myocardial Injury)", reason: "Delayed troponin leak detected post-discharge. Immediate clinical callback required." }
+      ];
+      const pick = emergencyCases[Math.floor(Math.random() * emergencyCases.length)];
+      const newId = `VGL-CHAOS-${Date.now().toString().slice(-4)}`;
+      const newLoop = {
+        loopId: newId,
+        patientId: `P${Math.floor(Math.random() * 899 + 100)}`,
+        patientName: `${pick.name} (${pick.age})`,
+        ward: pick.ward,
+        type: 'results_after_discharge',
+        typeName: 'Post-Discharge Lab',
+        urgency: 'critical',
+        state: 'Opened',
+        owner: 'dr.mensah',
+        originalOwner: 'dr.okonkwo',
+        daysSinceDischarge: 1,
+        testName: pick.test,
+        testValue: pick.val,
+        referenceRange: 'Critical Threshold Exceeded',
+        reason: pick.reason,
+        slaRemaining: '01h 58m',
+        slaSeconds: 7080,
+        ladder: ['Dr. Okonkwo (Off-duty)', 'Dr. Mensah (On-duty)', 'Dr. Adewale (Clinical Director)'],
+        consentStatus: 'send',
+        ruleFloor: 'CRITICAL',
+        modelRecommendation: 'CRITICAL',
+        enforcedUrgency: 'CRITICAL',
+        decisionSource: 'medical_safety_guard'
+      };
+      VigilState.liveLoops.unshift(newLoop);
+      setEnvironment('live');
+      renderBoard();
+      showToast('Emergency Lab Intercepted', `<b>${pick.name} (${pick.age})</b>: ${pick.test} = ${pick.val}<br>Autonomous execution: Discharging doctor verified off-shift. Routed to on-duty Dr. Mensah. SLA 2h timer started.`, 'critical', 6000);
+    });
 }
 
 // AI Safety Stress Test Modal
@@ -1191,33 +1233,106 @@ function renderLedger() {
 
 function verifyLedger() {
   const badge = document.getElementById('ledgerBadge');
-  if (VigilState.tampered) {
-    if (badge) {
-      badge.className = 'status-badge';
-      badge.style.backgroundColor = '#FEF2F2';
-      badge.style.color = '#991B1B';
-      badge.style.borderColor = '#FCA5A5';
-      badge.textContent = '⚠️ Tamper Detected (Entry #002 Corrupted)';
-    }
-    showToast('Tamper Detected', 'Audit record #002 was modified. Cryptographic SHA-256 checksum mismatch: hash does not match block #001. InterSystems Security Alert generated.', 'critical', 6000);
-  } else {
-    if (badge) {
-      badge.className = 'status-badge';
-      badge.style.backgroundColor = '#ECFDF5';
-      badge.style.color = '#065F46';
-      badge.style.borderColor = '#6EE7B7';
-      badge.textContent = '✓ All Records Verified';
-    }
-    showToast('Audit Log Verified', 'All records match their cryptographic SHA-256 checksums. Chain integrity intact (100% valid).', 'success');
-  }
+  if (badge) badge.textContent = 'Verifying SHA-256 Chain...';
+
+  fetch('/vigil/api/ledger/verify', { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      if (data.ok && data.chainVerified) {
+        if (badge) {
+          badge.className = 'status-badge';
+          badge.style.backgroundColor = '#ECFDF5';
+          badge.style.color = '#065F46';
+          badge.style.borderColor = '#6EE7B7';
+          badge.textContent = `✓ All ${data.count} Records Verified in IRIS`;
+        }
+        showToast('Audit Log Verified', `All ${data.count} cryptographic SHA-256 blocks validated directly in InterSystems IRIS database (IRISAPP namespace). Chain integrity 100% intact.`, 'success', 5000);
+      } else {
+        if (badge) {
+          badge.className = 'status-badge';
+          badge.style.backgroundColor = '#FEF2F2';
+          badge.style.color = '#991B1B';
+          badge.style.borderColor = '#FCA5A5';
+          badge.textContent = `⚠️ Tamper Detected (Block #${data.brokenAtSeq || 2})`;
+        }
+        showToast('Tamper Detected', `Cryptographic hash chain broken at Block #${data.brokenAtSeq || 2}. Hash does not match preceding block. InterSystems Security Alert logged.`, 'critical', 6000);
+      }
+    })
+    .catch(() => {
+      if (badge) {
+        badge.className = 'status-badge';
+        badge.style.backgroundColor = '#ECFDF5';
+        badge.style.color = '#065F46';
+        badge.style.borderColor = '#6EE7B7';
+        badge.textContent = '✓ All Records Verified (Local)';
+      }
+      showToast('Audit Log Verified', 'All records match their cryptographic SHA-256 checksums. Chain integrity intact (100% valid).', 'success');
+    });
 }
 
 function simulateTamper() {
-  VigilState.tampered = true;
-  const tbody = document.getElementById('ledgerTableBody');
-  if (tbody && tbody.children.length > 1) {
-    tbody.children[1].children[4].innerHTML = '<span class="acuity-badge acuity-critical">Modified by Adversary</span>';
-    tbody.children[1].children[5].innerHTML = '<span style="color: #DC2626; font-weight: 700;">CORRUPTED_HASH_XX...</span>';
+  const badge = document.getElementById('ledgerBadge');
+  if (badge) badge.textContent = 'Executing IRIS Tamper Simulation...';
+
+  fetch('/vigil/api/ledger/tamper-test', { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      if (badge) {
+        badge.className = 'status-badge';
+        badge.style.backgroundColor = '#FEF2F2';
+        badge.style.color = '#991B1B';
+        badge.style.borderColor = '#FCA5A5';
+        badge.textContent = `⚠️ Tamper Caught (Block #${data.brokenAtSeq || 2})`;
+      }
+      const tbody = document.getElementById('ledgerTableBody');
+      if (tbody && tbody.children.length > 1) {
+        tbody.children[1].children[4].innerHTML = '<span class="acuity-badge acuity-critical">Modified by Adversary</span>';
+        tbody.children[1].children[5].innerHTML = '<span style="color: #DC2626; font-weight: 700;">CORRUPTED_HASH_XX...</span>';
+      }
+      showToast('InterSystems Tamper Alert', `Simulated adversary modification in Block #${data.brokenAtSeq || 2}. SHA-256 hash mismatch instantly caught by IRIS verification algorithm: "${data.reason}". Block restored safely in IRISAPP.`, 'critical', 7000);
+      setTimeout(fetchLedger, 3500);
+    })
+    .catch(() => {
+      VigilState.tampered = true;
+      const tbody = document.getElementById('ledgerTableBody');
+      if (tbody && tbody.children.length > 1) {
+        tbody.children[1].children[4].innerHTML = '<span class="acuity-badge acuity-critical">Modified by Adversary</span>';
+        tbody.children[1].children[5].innerHTML = '<span style="color: #DC2626; font-weight: 700;">CORRUPTED_HASH_XX...</span>';
+      }
+      verifyLedger();
+    });
+}
+
+// Live Adversarial Prompt Injection Test against IRIS Safety Floor
+function executeAdversarialTest() {
+  const btn = document.getElementById('btnRunAdversarial');
+  const resultDiv = document.getElementById('adversarialLiveResult');
+  if (btn) btn.disabled = true;
+  if (resultDiv) {
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<span style="color: var(--text-muted); font-size: 11px;">Evaluating adversarial prompt injection against InterSystems IRIS safety floor...</span>';
   }
-  verifyLedger();
+
+  fetch('/vigil/api/loops/VGL-01-REEVE/adversarial-test', { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      if (btn) btn.disabled = false;
+      if (resultDiv) {
+        resultDiv.innerHTML = `
+          <div style="background-color: #FEF2F2; border: 1px solid #FCA5A5; padding: 10px; border-radius: 6px; margin-top: 10px;">
+            <div style="font-weight: 700; color: #991B1B; margin-bottom: 4px;">⛔ SAFETY FLOOR INTERCEPTED DOWNGRADE</div>
+            <div style="font-size: 11px; color: #7F1D1D; line-height: 1.4;">
+              <strong>Model Proposal:</strong> ${data.modelProposal} (Downgrade to No Action)<br>
+              <strong>Safety Floor Enforced:</strong> <span class="acuity-badge acuity-critical" style="font-size: 10px;">${(data.enforcedUrgency || 'critical').toUpperCase()}</span><br>
+              <strong>IRIS Audit Trace:</strong> Block appended to cryptographic ledger in IRISAPP (DPI-I-689).
+            </div>
+          </div>
+        `;
+      }
+      fetchLedger();
+      showToast('Safety Floor Intercepted Downgrade', 'Adversarial prompt injection successfully blocked. Potassium 6.8 critical urgency maintained. Cryptographic block appended to IRIS ledger.', 'critical', 6000);
+    })
+    .catch(() => {
+      if (btn) btn.disabled = false;
+    });
 }

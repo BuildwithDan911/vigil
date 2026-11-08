@@ -1,0 +1,9 @@
+zn "IRISAPP"
+do $System.OBJ.Load("/home/irisowner/dev/src/Vigil/Ledger/Chain.cls", "ck")
+do $System.OBJ.Load("/home/irisowner/dev/src/Vigil/Setup.cls", "ck")
+do $System.OBJ.Load("/home/irisowner/dev/src/Vigil/Web/Dispatcher.cls", "ck")
+do ##class(%SQL.Statement).%ExecDirect(, "DELETE FROM Vigil_Data.Loop")
+do ##class(%SQL.Statement).%ExecDirect(, "DELETE FROM Vigil_Data.LedgerEvent")
+set sc = ##class(Vigil.Setup).SeedDemoData()
+write "SeedDemoData result: ", sc, !
+halt

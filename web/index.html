@@ -647,9 +647,13 @@
         <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.45;">
           Vigil's deterministic safety floor strictly prevents any AI model from ignoring dangerous laboratory values. Emergency classification was kept as <strong>CRITICAL</strong> and recorded to the safety log.
         </p>
+        <div id="adversarialLiveResult" style="display: none; margin-top: 10px;"></div>
       </div>
 
-      <div style="display: flex; justify-content: flex-end;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <button class="btn btn-secondary-shield" id="btnRunAdversarial" onclick="executeAdversarialTest()">
+          ⚡ Run Live Against IRIS Container
+        </button>
         <button class="btn btn-outline" onclick="closeAdversarialModal()">Close Test</button>
       </div>
 

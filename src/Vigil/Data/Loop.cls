@@ -42,6 +42,20 @@ Property RuleVersion As %String(MAXLEN = 16) [ InitialExpression = "1.0.0" ];
 
 Property CreatedAt As %TimeStamp;
 
+Property PatientName As %String(MAXLEN = 128);
+
+Property Ward As %String(MAXLEN = 64);
+
+Property TestName As %String(MAXLEN = 128);
+
+Property TestValue As %String(MAXLEN = 128);
+
+Property ReferenceRange As %String(MAXLEN = 64);
+
+Property SlaRemaining As %String(MAXLEN = 32);
+
+Property SlaSeconds As %Integer [ InitialExpression = 7200 ];
+
 Index IdxLoopId On LoopId [ Unique ];
 
 Index IdxPatientId On PatientId;

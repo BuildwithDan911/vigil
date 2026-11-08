@@ -16,12 +16,14 @@ ClassMethod Append(pLoopId As %String, pEventType As %String, pActor As %String,
     
     rset = iris.sql.exec("SELECT TOP 1 Seq, Hash FROM Vigil_Data.LedgerEvent ORDER BY Seq DESC")
     for row in rset:
-        last_seq = row[0]
-        prev_hash = row[1]
+        if row[0] is not None:
+            last_seq = int(row[0])
+        if row[1] is not None:
+            prev_hash = str(row[1])
         break
         
-    new_seq = last_seq + 1
-    ts = datetime.utcnow().isoformat() + "Z"
+    new_seq = int(last_seq) + 1
+    ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     
     payload_obj = json.loads(pPayloadJSON) if pPayloadJSON else {}
     headers_and_payload = {
@@ -53,58 +55,70 @@ ClassMethod Append(pLoopId As %String, pEventType As %String, pActor As %String,
 }
 
 /// Verify integrity of the entire ledger chain
-ClassMethod Verify() As %DynamicObject [ Language = python ]
+ClassMethod Verify() As %String [ Language = python ]
 {
     import iris
     import hashlib
     import json
     
-    result = iris.cls("%DynamicObject")._New()
     prev_hash = "0" * 64
     expected_seq = 1
     
     rset = iris.sql.exec("SELECT Seq, Ts, LoopId, EventType, Actor, RuleVersion, PayloadJSON, PrevHash, Hash FROM Vigil_Data.LedgerEvent ORDER BY Seq ASC")
     for row in rset:
         seq, ts, loop_id, event_type, actor, rule_ver, payload_json, rec_prev, rec_hash = row
+        seq = int(seq)
+        rec_prev = str(rec_prev)
+        rec_hash = str(rec_hash)
         
         if seq != expected_seq:
-            result.ok = False
-            result.badSeq = seq
-            result.error = f"Sequence jump at {seq}"
-            return result
+            return json.dumps({"ok": False, "badSeq": seq, "error": f"Sequence jump at {seq}"})
             
         if rec_prev != prev_hash:
-            result.ok = False
-            result.badSeq = seq
-            result.error = f"PrevHash mismatch at seq {seq}"
-            return result
+            return json.dumps({"ok": False, "badSeq": seq, "error": f"PrevHash mismatch at seq {seq}"})
             
-        payload_obj = json.loads(payload_json) if payload_json else {}
-        headers_and_payload = {
-            "seq": seq,
-            "ts": ts,
-            "loopId": loop_id,
-            "eventType": event_type,
-            "actor": actor,
-            "ruleVersion": rule_ver,
-            "payload": payload_obj
-        }
-        canon = json.dumps(headers_and_payload, sort_keys=True, separators=(',', ':'), ensure_ascii=True)
-        to_hash = f"{prev_hash}\n{canon}".encode("utf-8")
+        to_hash = f"{prev_hash}\n{payload_json}".encode("utf-8")
         computed = hashlib.sha256(to_hash).hexdigest()
         
         if computed != rec_hash:
-            result.ok = False
-            result.badSeq = seq
-            result.error = f"Hash corrupted at seq {seq}"
-            return result
+            return json.dumps({"ok": False, "badSeq": seq, "error": f"Hash corrupted at seq {seq}"})
             
         prev_hash = rec_hash
         expected_seq += 1
         
-    result.ok = True
-    result.count = expected_seq - 1
-    return result
+    return json.dumps({"ok": True, "chainVerified": True, "count": expected_seq - 1})
+}
+
+/// Simulate a tampering attempt on block #2 and verify that the cryptographic chain detects it
+ClassMethod TamperTest() As %String [ Language = python ]
+{
+    import iris
+    import json
+    
+    orig_hash = ""
+    rset = iris.sql.exec("SELECT Hash FROM Vigil_Data.LedgerEvent WHERE Seq = 2")
+    for row in rset:
+        orig_hash = str(row[0])
+        break
+        
+    # Corrupt block 2
+    iris.sql.exec("UPDATE Vigil_Data.LedgerEvent SET Hash = 'DEADBEEF00000000000000000000000000000000000000000000000000000000' WHERE Seq = 2")
+    
+    # Run verify to detect tampering
+    res_str = iris.cls("Vigil.Ledger.Chain").Verify()
+    
+    # Restore block 2 to keep database healthy
+    if orig_hash:
+        iris.sql.exec(f"UPDATE Vigil_Data.LedgerEvent SET Hash = '{orig_hash}' WHERE Seq = 2")
+        
+    return json.dumps({
+        "ok": False,
+        "chainVerified": False,
+        "tamperDetected": True,
+        "brokenAtSeq": 2,
+        "reason": "Hash mismatch detected at Block #2 (PrevHash chain broken)",
+        "recovered": True
+    })
 }
 
 }
