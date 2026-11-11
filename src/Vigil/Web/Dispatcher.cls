@@ -222,7 +222,8 @@ ClassMethod InjectEmergency() As %Status
     
     Set loop = ##class(Vigil.Data.Loop).%New()
     Set loop.LoopId = loopId
-    Set loop.PatientId = "P99"
+    Set loop.PatientId = "P99-" _ suffix
+    Set loop.AccessionOrReferralId = "ACC-EMG-" _ suffix _ "-" _ $Piece($Horolog, ",", 2)
     Set loop.PatientName = "Marcus Vance (62y)"
     Set loop.Ward = "Ward 2E"
     Set loop.Type = "results_after_discharge"

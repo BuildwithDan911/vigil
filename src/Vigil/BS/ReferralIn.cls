@@ -2,7 +2,7 @@
 Class Vigil.BS.ReferralIn Extends Ens.BusinessService
 {
 
-Method OnProcessInput(pInput As %Stream.Object, Output pOutput As %RegisteredObject) As %Status
+Method OnProcessInput(pInput As %RegisteredObject, Output pOutput As %RegisteredObject, ByRef pHint As %String) As %Status
 {
     Set sc = $$$OK
     Try {
@@ -14,8 +14,8 @@ Method OnProcessInput(pInput As %Stream.Object, Output pOutput As %RegisteredObj
         }
         
         Set json = {}.%FromJSON(raw)
-        Set refId = json.referralId
-        Set patientId = json.patientId
+        Set refId = json.%Get("referralId")
+        Set patientId = json.%Get("patientId")
         
         // Pass referral JSON directly to VigilProcess
         Set request = ##class(Ens.StringRequest).%New()

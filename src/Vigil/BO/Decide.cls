@@ -4,7 +4,7 @@ Class Vigil.BO.Decide Extends Ens.BusinessOperation
 
 Parameter INVOCATION = "Queue";
 
-Method OnMessage(pRequest As Vigil.Msg.AgentRequest, Output pResponse As Vigil.Msg.AgentDecision) As %Status
+Method Decide(pRequest As Vigil.Msg.AgentRequest, Output pResponse As Vigil.Msg.AgentDecision) As %Status
 {
     Set sc = $$$OK
     Set pResponse = ##class(Vigil.Msg.AgentDecision).%New()
@@ -63,6 +63,15 @@ ClassMethod ExecuteDecision(payloadJson As %String, mode As %String) As %String 
 
     res = decide(payload=payload, mode=mode, api_key=api_key, replay_dir=replay_dir)
     return json.dumps(res)
+}
+
+XData MessageMap
+{
+<MapItems>
+  <MapItem MessageType="Vigil.Msg.AgentRequest">
+    <Method>Decide</Method>
+  </MapItem>
+</MapItems>
 }
 
 }

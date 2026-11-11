@@ -16,7 +16,8 @@ ClassMethod Run() As %Status
         Do ##class(Security.Users).UnExpireUserPasswords("*")
         
         Set appPath = "/vigil"
-        Set props("AutheEnabled") = 96 // 32 (Unauthenticated) + 64 (Password)
+        Set props("Enabled") = 1
+        Set props("AutheEnabled") = 96 // 32 (Password) + 64 (Unauthenticated)
         Set props("MatchRoles") = ":%All"
         Set props("NameSpace") = namespace
         Set props("DispatchClass") = "Vigil.Web.Dispatcher"
@@ -71,6 +72,7 @@ ClassMethod SeedDemoData() As %Status
     Set l1 = ##class(Vigil.Data.Loop).%New()
     Set l1.LoopId = "VGL-01-REEVE"
     Set l1.PatientId = "P01"
+    Set l1.AccessionOrReferralId = "ACC-P01-01"
     Set l1.PatientName = "Martha Reeve (78y)"
     Set l1.Ward = "Ward 4W"
     Set l1.Type = "results_after_discharge"
@@ -97,6 +99,7 @@ ClassMethod SeedDemoData() As %Status
     Set l2 = ##class(Vigil.Data.Loop).%New()
     Set l2.LoopId = "VGL-REF-ONC"
     Set l2.PatientId = "R01"
+    Set l2.AccessionOrReferralId = "REF-R01-01"
     Set l2.PatientName = "Amina Diallo (82y)"
     Set l2.Ward = "Oncology Clinic"
     Set l2.Type = "referral_leakage"
@@ -122,6 +125,7 @@ ClassMethod SeedDemoData() As %Status
     Set l3 = ##class(Vigil.Data.Loop).%New()
     Set l3.LoopId = "VGL-02-OKAI"
     Set l3.PatientId = "P02"
+    Set l3.AccessionOrReferralId = "ACC-P02-01"
     Set l3.PatientName = "Samuel Okai (67y)"
     Set l3.Ward = "Cardiology Unit"
     Set l3.Type = "results_after_discharge"
@@ -148,6 +152,7 @@ ClassMethod SeedDemoData() As %Status
     Set l4 = ##class(Vigil.Data.Loop).%New()
     Set l4.LoopId = "VGL-REF-CARD"
     Set l4.PatientId = "R03"
+    Set l4.AccessionOrReferralId = "REF-R03-01"
     Set l4.PatientName = "Elena Rostova (71y)"
     Set l4.Ward = "Cardiology Outpatient"
     Set l4.Type = "referral_leakage"
@@ -174,6 +179,7 @@ ClassMethod SeedDemoData() As %Status
     Set l5 = ##class(Vigil.Data.Loop).%New()
     Set l5.LoopId = "VGL-03-KIM"
     Set l5.PatientId = "P03"
+    Set l5.AccessionOrReferralId = "ACC-P03-01"
     Set l5.PatientName = "David Kim (45y)"
     Set l5.Ward = "Ambulatory Care"
     Set l5.Type = "results_after_discharge"

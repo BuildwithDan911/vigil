@@ -3,16 +3,17 @@ ObjectScript Static Linter for Vigil .cls files.
 Checks for common InterSystems ObjectScript compiler & runtime pitfalls:
 1. DynamicObject dot-access with underscores (e.g. obj.my_field -> invalid because '_' is concatenation!)
 2. Underscores inside ObjectScript identifiers (Set foo_bar = 1 -> invalid)
-3. Unbalanced braces outside strings/comments/XData/Python blocks
-4. Missing Storage Default issues or malformed XData
+3. Invalid default values on ByRef or Output arguments
+4. Unbalanced braces outside strings/comments/XData/Python blocks
+5. Malformed XML inside XData blocks (UrlMap, MessageMap, ProductionDefinition)
 """
 import os
 import re
 import glob
+import xml.etree.ElementTree as ET
 
 
 def strip_strings_and_comments(line: str) -> str:
-    # Remove // comments outside quotes
     out = []
     in_str = False
     i = 0
@@ -44,6 +45,8 @@ def audit_cls_file(filepath: str):
     in_sql = False
     brace_depth = 0
     block_brace_start = 0
+    xdata_name = ""
+    xdata_lines = []
 
     for idx, raw_line in enumerate(lines, start=1):
         stripped = raw_line.strip()
@@ -52,12 +55,14 @@ def audit_cls_file(filepath: str):
         if not in_python and ("[ Language = python ]" in raw_line or "[Language = python]" in raw_line):
             in_python = True
             block_brace_start = brace_depth
-            # Wait for opening brace
             continue
 
         # Track XData / Storage
         if re.match(r"^(XData|Storage)\s+", stripped):
             in_xdata = True
+            in_storage = stripped.startswith("Storage")
+            xdata_name = stripped.split()[1] if len(stripped.split()) > 1 else ""
+            xdata_lines = []
             block_brace_start = brace_depth
             if "{" in stripped:
                 brace_depth += stripped.count("{") - stripped.count("}")
@@ -65,15 +70,25 @@ def audit_cls_file(filepath: str):
 
         if in_python or in_xdata:
             if in_python:
-                # Exit python method block only at column-0 closing brace
                 if raw_line.rstrip() == "}":
                     in_python = False
-                    brace_depth -= 1
                 continue
             else:
                 brace_depth += stripped.count("{") - stripped.count("}")
                 if brace_depth <= block_brace_start and "}" in stripped:
+                    if not in_storage and xdata_lines:
+                        xml_body = "\n".join(xdata_lines).strip()
+                        if xml_body.startswith("<"):
+                            try:
+                                # Wrap if multiple root elements (not standard) or parse directly
+                                ET.fromstring(xml_body)
+                            except ET.ParseError as e:
+                                errors.append(f"{filepath}:{idx}: Malformed XML in XData {xdata_name}: {e}")
                     in_xdata = False
+                    in_storage = False
+                else:
+                    if not (stripped == "{" and not xdata_lines):
+                        xdata_lines.append(raw_line.rstrip())
                 continue
 
         # Embedded SQL check (&sql(...))
@@ -87,29 +102,27 @@ def audit_cls_file(filepath: str):
         code = strip_strings_and_comments(raw_line)
         brace_depth += code.count("{") - code.count("}")
 
-        # Skip class header, property, parameter, index lines for statement checks,
-        # though even class/property names shouldn't have underscores!
-        # Check for dot-access with underscore: e.g. scoreObj.final_level
+        # 1. Check for dot-access with underscore: e.g. scoreObj.final_level
         dot_underscore = re.findall(r"([A-Za-z%][A-Za-z0-9]*)\.([A-Za-z0-9]*_[A-Za-z0-9_]*)", code)
         for obj, prop in dot_underscore:
-            errors.append(f"{filepath}:{idx}: Invalid dot-access with underscore '{obj}.{prop}' (use .{obj}.%Get(\"{prop}\"))")
+            errors.append(f"{filepath}:{idx}: Invalid dot-access with underscore '{obj}.{prop}' (use {obj}.%Get(\"{prop}\"))")
 
-        # Check for local variable or identifier containing underscore (excluding SQL tables or ##class)
-        # Note: in ObjectScript, '_' between identifiers without spaces like `a_b` IS concatenation of a and b,
-        # UNLESS followed by `=` like `Set a_b = 1` which is a syntax error!
+        # 2. Invalid assignment to identifier with underscore
         assign_underscore = re.findall(r"\b(?:Set|For|If|ElseIf|Quit)\s+([A-Za-z%][A-Za-z0-9]*_[A-Za-z0-9_]*)\s*=", code, re.IGNORECASE)
         for var in assign_underscore:
             errors.append(f"{filepath}:{idx}: Invalid assignment to identifier with underscore '{var}'")
 
-        # Also catch bare underscore concatenation where user meant a single variable (e.g. `foo_bar` after `Set x = foo_bar` where `foo` or `bar` isn't obviously string)
-        # Flag any identifier_identifier pattern in ObjectScript code that isn't a macro $$$foo_bar
+        # 3. Suspicious underscore tokens
         tokens = re.findall(r"(?<![\"A-Za-z0-9_$%])([A-Za-z%][A-Za-z0-9]*_[A-Za-z0-9_]+)", code)
         for tok in tokens:
             errors.append(f"{filepath}:{idx}: Suspicious underscore in ObjectScript token '{tok}' (possible accidental snake_case or unspaced concat)")
 
-        # Check for invalid default values on ByRef or Output arguments
+        # 4. Invalid default values on ByRef or Output arguments
         if re.search(r"\b(ByRef|Output)\s+[A-Za-z0-9%]+\s+As\s+[A-Za-z0-9%.]+\s*=", code, re.IGNORECASE):
             errors.append(f"{filepath}:{idx}: Default value not allowed on ByRef/Output parameter in ObjectScript")
+
+    if brace_depth != 0:
+        errors.append(f"{filepath}: Unbalanced braces detected (final depth={brace_depth})")
 
     return errors
 
@@ -128,7 +141,7 @@ def main():
             print("[ERROR]", e)
         raise AssertionError(f"Found {len(all_errors)} ObjectScript lint error(s)!")
 
-    print(f"[PASS] Audited {len(cls_files)} ObjectScript .cls files: 0 syntax/underscore issues found.")
+    print(f"[PASS] Audited {len(cls_files)} ObjectScript .cls files: 0 syntax, brace, signature, or XData XML issues found.")
 
 
 if __name__ == "__main__":

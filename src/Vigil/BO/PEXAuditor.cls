@@ -4,7 +4,7 @@ Class Vigil.BO.PEXAuditor Extends Ens.BusinessOperation
 
 Parameter INVOCATION = "Queue";
 
-Method OnMessage(pRequest As Ens.StringRequest, Output pResponse As Ens.StringResponse) As %Status
+Method Audit(pRequest As Ens.StringRequest, Output pResponse As Ens.StringResponse) As %Status
 {
     Set sc = $$$OK
     Set pResponse = ##class(Ens.StringResponse).%New()
@@ -38,6 +38,15 @@ Method OnMessage(pRequest As Ens.StringRequest, Output pResponse As Ens.StringRe
     }
     
     Quit sc
+}
+
+XData MessageMap
+{
+<MapItems>
+  <MapItem MessageType="Ens.StringRequest">
+    <Method>Audit</Method>
+  </MapItem>
+</MapItems>
 }
 
 }

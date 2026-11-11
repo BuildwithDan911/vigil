@@ -2,7 +2,7 @@
 Class Vigil.BS.ADTIn Extends Ens.BusinessService
 {
 
-Method OnProcessInput(pInput As %Stream.Object, Output pOutput As %RegisteredObject) As %Status
+Method OnProcessInput(pInput As %RegisteredObject, Output pOutput As %RegisteredObject, ByRef pHint As %String) As %Status
 {
     Set sc = $$$OK
     Try {
