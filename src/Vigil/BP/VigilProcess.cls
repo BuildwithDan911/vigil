@@ -10,6 +10,12 @@ Method OnRequest(pRequest As Ens.StringRequest, Output pResponse As Ens.StringRe
     Try {
         Set rawInput = pRequest.StringValue
         
+        // Check if clock tick message
+        If $Extract(rawInput, 1, 11) = "CLOCK_TICK|" {
+            Set pResponse.StringValue = "TICK_ACK:" _ $Piece(rawInput, "|", 2)
+            Quit
+        }
+
         // Check if referral message
         If $Extract(rawInput, 1, 9) = "REFERRAL|" {
             Set sc = ..ProcessReferral(rawInput, .pResponse)
@@ -70,13 +76,13 @@ Method OnRequest(pRequest As Ens.StringRequest, Output pResponse As Ens.StringRe
         Set scoreJsonStr = ##class(Vigil.Score.Engine).ScoreObservations(obsArray.%ToJSON(), dischargeTime, resultTime, age, pat.LivesAlone, "dr.okonkwo")
         Set scoreObj = {}.%FromJSON(scoreJsonStr)
         
-        If scoreObj.skip {
-            Set pResponse.StringValue = "SKIP:" _ scoreObj.reason
+        If scoreObj.%Get("skip") {
+            Set pResponse.StringValue = "SKIP:" _ scoreObj.%Get("reason")
             Quit
         }
         
         // If band is no_action, skip creating open loop per spec
-        If scoreObj.final_level = "no_action" {
+        If scoreObj.%Get("final_level") = "no_action" {
             Set pResponse.StringValue = "SKIP:no_action"
             Quit
         }
@@ -90,17 +96,19 @@ Method OnRequest(pRequest As Ens.StringRequest, Output pResponse As Ens.StringRe
         
         // 6. Create new Loop
         Set loop = ##class(Vigil.Data.Loop).%New()
-        Set loop.LoopId = "VGL-" _ $Extract($ZCRC(patientId_token1, 7), 1, 8)
+        Set loop.LoopId = "VGL-" _ $Extract($ZCRC(patientId _ token1, 7), 1, 8)
         Set loop.Type = "results_after_discharge"
         Set loop.PatientId = patientId
+        Set loop.PatientName = pat.GivenName _ " " _ pat.FamilyName
+        Set loop.Ward = pat.CurrentWard
         Set loop.AccessionOrReferralId = token1
-        Set loop.Urgency = scoreObj.final_level
-        Set loop.FloorLevel = scoreObj.floor_level
-        Set loop.Score = scoreObj.score
+        Set loop.Urgency = scoreObj.%Get("final_level")
+        Set loop.FloorLevel = scoreObj.%Get("floor_level")
+        Set loop.Score = scoreObj.%Get("score")
         Set loop.State = "Opened"
-        Set loop.Owner = scoreObj.recommended_owner
-        Set loop.DaysSinceDischarge = scoreObj.days_since_discharge_raw
-        Set loop.Reason = "Post-discharge result: Flag " _ scoreObj.max_flag _ " (" _ scoreObj.final_level _ " urgency)."
+        Set loop.Owner = scoreObj.%Get("recommended_owner")
+        Set loop.DaysSinceDischarge = scoreObj.%Get("days_since_discharge_raw")
+        Set loop.Reason = "Post-discharge result: Flag " _ scoreObj.%Get("max_flag") _ " (" _ scoreObj.%Get("final_level") _ " urgency)."
         Set loop.DecisionSource = "rules_floor"
         Set loop.CreatedAt = $ZDateTime($Horolog, 3)
         
@@ -108,7 +116,10 @@ Method OnRequest(pRequest As Ens.StringRequest, Output pResponse As Ens.StringRe
         Set hours = 24
         If loop.Urgency = "critical" Set hours = 2
         If loop.Urgency = "urgent" Set hours = 8
-        Set loop.Deadline = $ZDateTime($H + (hours/24), 3)
+        Set sec = $Piece($Horolog, ",", 2) + (hours * 3600)
+        Set day = +$Horolog + (sec \ 86400)
+        Set rem = sec # 86400
+        Set loop.Deadline = $ZDateTime(day _ "," _ rem, 3)
         
         // Save Loop
         Set sc = loop.%Save()
@@ -129,15 +140,16 @@ Method ProcessReferral(rawInput As %String, ByRef pResponse As Ens.StringRespons
         Set refJson = $Piece(rawInput, "|", 3, *)
         Set ref = {}.%FromJSON(refJson)
         
-        If ref.bookingStatus = "booked" {
+        If ref.%Get("bookingStatus") = "booked" {
             Set pResponse.StringValue = "SKIP:already_booked"
             Quit
         }
         
-        Set loopId = "VGL-REF-" _ $Extract($ZCRC(patientId_ref.referralId, 7), 1, 6)
+        Set refId = ref.%Get("referralId")
+        Set loopId = "VGL-REF-" _ $Extract($ZCRC(patientId _ refId, 7), 1, 6)
         
         // Deduplication
-        Set existing = ##class(Vigil.Data.Loop).IdxDedupeOpen("referral_leakage", patientId, ref.referralId)
+        Set existing = ##class(Vigil.Data.Loop).IdxDedupeOpen("referral_leakage", patientId, refId)
         If $IsObject(existing) {
             Set pResponse.StringValue = "DEDUPE:" _ existing.LoopId
             Quit
@@ -147,18 +159,21 @@ Method ProcessReferral(rawInput As %String, ByRef pResponse As Ens.StringRespons
         Set loop.LoopId = loopId
         Set loop.Type = "referral_leakage"
         Set loop.PatientId = patientId
-        Set loop.AccessionOrReferralId = ref.referralId
+        Set loop.AccessionOrReferralId = refId
         Set loop.Urgency = "urgent"
         Set loop.FloorLevel = "urgent"
         Set loop.Score = 7
         Set loop.State = "Opened"
         Set loop.Owner = "dr.mensah"
-        Set loop.Reason = "Referral leakage: Unbooked consultation for " _ ref.specialty _ " at " _ ref.referredTo
+        Set loop.Reason = "Referral leakage: Unbooked consultation for " _ ref.%Get("specialty") _ " at " _ ref.%Get("referredTo")
         Set loop.DecisionSource = "rules"
         Set loop.CreatedAt = $ZDateTime($Horolog, 3)
-        Set loop.Deadline = $ZDateTime($H + (8/24), 3) // 8 hours SLA for urgent referral chase
+        Set sec = $Piece($Horolog, ",", 2) + (8 * 3600)
+        Set day = +$Horolog + (sec \ 86400)
+        Set rem = sec # 86400
+        Set loop.Deadline = $ZDateTime(day _ "," _ rem, 3) // 8 hours SLA for urgent referral chase
         
-        If ref.share_results_sms = 0 {
+        If ref.%Get("share_results_sms") = 0 {
             Set loop.ConsentStatus = "hold"
         } Else {
             Set loop.ConsentStatus = "send"

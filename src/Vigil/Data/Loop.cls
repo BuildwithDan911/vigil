@@ -132,6 +132,27 @@ Storage Default
 <Value name="21">
 <Value>CreatedAt</Value>
 </Value>
+<Value name="22">
+<Value>PatientName</Value>
+</Value>
+<Value name="23">
+<Value>Ward</Value>
+</Value>
+<Value name="24">
+<Value>TestName</Value>
+</Value>
+<Value name="25">
+<Value>TestValue</Value>
+</Value>
+<Value name="26">
+<Value>ReferenceRange</Value>
+</Value>
+<Value name="27">
+<Value>SlaRemaining</Value>
+</Value>
+<Value name="28">
+<Value>SlaSeconds</Value>
+</Value>
 </Data>
 <DataLocation>^Vigil.Data.LoopD</DataLocation>
 <DefaultData>LoopDefaultData</DefaultData>

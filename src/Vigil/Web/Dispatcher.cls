@@ -15,6 +15,12 @@ ClassMethod OnHandleCorsRequest(url As %String) As %Status
 XData UrlMap [ XMLNamespace = "http://www.intersystems.com/urlmap" ]
 {
 <Routes>
+  <!-- Web UI Static Routes -->
+  <Route Url="/" Method="GET" Call="ServeIndex"/>
+  <Route Url="/index.html" Method="GET" Call="ServeIndex"/>
+  <Route Url="/styles.css" Method="GET" Call="ServeCss"/>
+  <Route Url="/app.js" Method="GET" Call="ServeJs"/>
+
   <!-- Health and Metadata -->
   <Route Url="/api/health" Method="GET" Call="Health"/>
   <Route Url="/api/info" Method="GET" Call="Info"/>
@@ -417,6 +423,51 @@ ClassMethod GetCallbackScript(loopId As %String) As %Status
         Set response.script = "Hola, esta es una llamada del Hospital General Harbourview sobre el resultado de una prueba reciente. Por favor contáctenos hoy al 0800-427-268."
     }
     Write response.%ToJSON()
+    Quit $$$OK
+}
+
+ClassMethod ServeIndex() As %Status
+{
+    Set reqUri = $Get(%request.CgiEnvs("REQUEST_URI"))
+    If (reqUri = "/vigil") {
+        Set %response.Redirect = "/vigil/"
+        Quit $$$OK
+    }
+    Quit ..ServeFile("index.html", "text/html; charset=utf-8")
+}
+
+ClassMethod ServeCss() As %Status
+{
+    Quit ..ServeFile("styles.css", "text/css; charset=utf-8")
+}
+
+ClassMethod ServeJs() As %Status
+{
+    Quit ..ServeFile("app.js", "application/javascript; charset=utf-8")
+}
+
+ClassMethod ServeFile(filename As %String, contentType As %String) As %Status
+{
+    Set %response.ContentType = contentType
+    Set devHome = $SYSTEM.Util.GetEnviron("DEV_HOME")
+    If devHome = "" Set devHome = "/home/irisowner/dev"
+    Set fullPath = devHome _ "/web/" _ filename
+    If '##class(%File).Exists(fullPath) {
+        Set fullPath = "/home/irisowner/dev/web/" _ filename
+    }
+    If '##class(%File).Exists(fullPath) {
+        Set fullPath = "/irisdev/app/web/" _ filename
+    }
+    If '##class(%File).Exists(fullPath) {
+        Set %response.Status = "404 Not Found"
+        Write "File not found: ", filename
+        Quit $$$OK
+    }
+    Set stream = ##class(%Stream.FileBinary).%New()
+    Set sc = stream.LinkToFile(fullPath)
+    If $$$ISOK(sc) {
+        Do stream.OutputToDevice()
+    }
     Quit $$$OK
 }
 

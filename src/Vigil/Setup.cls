@@ -31,11 +31,23 @@ ClassMethod Run() As %Status
         
         // 2. Compile Production
         Set $Namespace = namespace
-        Do $System.OBJ.Compile("Vigil.Production", "ck")
-        Write !, "  -> Vigil production compiled successfully."
+        Set sc = $System.OBJ.Compile("Vigil.Production", "ck")
+        If $$$ISOK(sc) {
+            Write !, "  -> Vigil production compiled successfully."
+        } Else {
+            Write !, "  [ERROR] Production compilation failed: ", $System.Status.GetErrorText(sc)
+        }
         
         // 3. Seed demonstration clinical cases into IRIS storage
         Do ..SeedDemoData()
+        
+        // 4. Start Production if not already running (ensures ZPM/IPM installs auto-start)
+        If '##class(Ens.Director).IsProductionRunning() {
+            Set scProd = ##class(Ens.Director).StartProduction("Vigil.Production")
+            If $$$ISOK(scProd) {
+                Write !, "  -> Vigil.Production started automatically."
+            }
+        }
         
     } Catch ex {
         Set sc = ex.AsStatus()
@@ -186,6 +198,21 @@ ClassMethod SeedDemoData() As %Status
 
     Write !, "  -> Seeded 5 demonstration loops and initial SHA-256 ledger blocks."
     Quit $$$OK
+}
+
+ClassMethod HealthCheck() As %Status
+{
+    Set sc = $$$OK
+    Try {
+        Set status = ""
+        Do ##class(Ens.Director).GetProductionStatus(.prodName, .status)
+        If prodName '= "Vigil.Production" {
+            Quit
+        }
+    } Catch ex {
+        Set sc = ex.AsStatus()
+    }
+    Quit sc
 }
 
 }

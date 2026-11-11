@@ -21,12 +21,14 @@ Property EmbeddingVector As %String(MAXLEN = 4096);
 ClassMethod GetSimilarCases(pQuery As %String, pTopK As %Integer = 2) As %DynamicArray [ Language = python ]
 {
     import iris
-    import json
+    import os
     import sys
-    from pathlib import Path
     
-    # Import vector_memory
-    sys.path.insert(0, "/home/irisowner/dev/python")
+    # Support Docker dev mount, Open Exchange /irisdev/app, and DEV_HOME
+    for p in [os.environ.get("DEV_HOME", ""), "/home/irisowner/dev", "/irisdev/app"]:
+        py_dir = os.path.join(p, "python") if p else ""
+        if py_dir and os.path.isdir(py_dir) and py_dir not in sys.path:
+            sys.path.insert(0, py_dir)
     from vigil.vector_memory import CaseMemoryEngine
     
     engine = CaseMemoryEngine()
@@ -35,11 +37,11 @@ ClassMethod GetSimilarCases(pQuery As %String, pTopK As %Integer = 2) As %Dynami
     arr = iris.cls("%DynamicArray")._New()
     for r in results:
         obj = iris.cls("%DynamicObject")._New()
-        obj.caseId = r["case_id"]
-        obj.patientId = r["patient_id"]
-        obj.title = r["title"]
-        obj.similarity = r["similarity"]
-        obj.outcome = r["outcome"]
+        obj._Set("caseId", r["case_id"])
+        obj._Set("patientId", r["patient_id"])
+        obj._Set("title", r["title"])
+        obj._Set("similarity", r["similarity"])
+        obj._Set("outcome", r["outcome"])
         arr._Push(obj)
     return arr
 }

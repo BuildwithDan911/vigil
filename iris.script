@@ -9,7 +9,7 @@ do $SYSTEM.OBJ.LoadDir("/home/irisowner/dev/src", "ck", , 1)
 set sc = ##class(Vigil.Setup).Run()
 write "Vigil.Setup status: ", sc,!
 
-set sc = ##class(Ens.Director).StartProduction("Vigil.Production")
+if '##class(Ens.Director).IsProductionRunning() { set sc = ##class(Ens.Director).StartProduction("Vigil.Production") } else { set sc = 1 }
 write "Vigil.Production started: ", sc,!
 
 halt

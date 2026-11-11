@@ -4,7 +4,7 @@ Class Vigil.BS.NightShift Extends Ens.BusinessService
 
 Parameter ADAPTER = "Vigil.Adapter.NightShiftInbound";
 
-Method OnProcessInput(pInput As %RegisteredObject, Output pOutput As %RegisteredObject, ByRef pHint As %String = "") As %Status
+Method OnProcessInput(pInput As %RegisteredObject, Output pOutput As %RegisteredObject, ByRef pHint As %String) As %Status
 {
     Set sc = $$$OK
     Try {

@@ -17,7 +17,8 @@ $testFiles = @(
     "tests/test_vector_memory.py",
     "tests/test_i18n.py",
     "tests/test_pex_auditor.py",
-    "tests/test_ipm_clean.py"
+    "tests/test_ipm_clean.py",
+    "tests/test_objectscript_lint.py"
 )
 
 $passed = 0

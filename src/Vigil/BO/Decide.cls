@@ -13,25 +13,27 @@ Method OnMessage(pRequest As Vigil.Msg.AgentRequest, Output pResponse As Vigil.M
         Set rawDecisionJson = ..ExecuteDecision(pRequest.PayloadJson, pRequest.Mode)
         Set d = {}.%FromJSON(rawDecisionJson)
         
-        Set pResponse.PromptVersion = d.prompt_version
-        Set pResponse.Model = d.model
-        Set pResponse.TokenInput = d.token_input
-        Set pResponse.TokenOutput = d.token_output
-        Set pResponse.LatencyMs = d.latency_ms
-        Set pResponse.ToolNames = d.tool_names
-        Set pResponse.FallbackReason = d.fallback_reason
-        Set pResponse.Mode = d.mode
-        Set pResponse.ContentPreview = d.content_preview
+        Set pResponse.PromptVersion = d.%Get("prompt_version")
+        Set pResponse.Model = d.%Get("model")
+        Set pResponse.TokenInput = d.%Get("token_input")
+        Set pResponse.TokenOutput = d.%Get("token_output")
+        Set pResponse.LatencyMs = d.%Get("latency_ms")
+        Set pResponse.ToolNames = d.%Get("tool_names")
+        Set pResponse.FallbackReason = d.%Get("fallback_reason")
+        Set pResponse.Mode = d.%Get("mode")
+        Set pResponse.ContentPreview = d.%Get("content_preview")
         
-        Set dec = d.decision
-        Set pResponse.Urgency = dec.urgency
-        Set pResponse.Owner = dec.owner
-        Set pResponse.Reason = dec.reason
-        Set pResponse.CallScript = dec.call_script
-        Set pResponse.SmsDraft = dec.sms_draft
-        Set pResponse.ConsentRecommendation = dec.consent_recommendation
-        If dec.%IsDefined("referral_action") Set pResponse.ReferralAction = dec.referral_action
-        Set pResponse.Confidence = dec.confidence
+        Set dec = d.%Get("decision")
+        If $IsObject(dec) {
+            Set pResponse.Urgency = dec.%Get("urgency")
+            Set pResponse.Owner = dec.%Get("owner")
+            Set pResponse.Reason = dec.%Get("reason")
+            Set pResponse.CallScript = dec.%Get("call_script")
+            Set pResponse.SmsDraft = dec.%Get("sms_draft")
+            Set pResponse.ConsentRecommendation = dec.%Get("consent_recommendation")
+            If dec.%IsDefined("referral_action") Set pResponse.ReferralAction = dec.%Get("referral_action")
+            Set pResponse.Confidence = dec.%Get("confidence")
+        }
         
     } Catch ex {
         Set sc = ex.AsStatus()
@@ -44,12 +46,20 @@ ClassMethod ExecuteDecision(payloadJson As %String, mode As %String) As %String 
     import json
     import os
     import sys
-    sys.path.append("/home/irisowner/dev/python")
+
+    replay_dir = "/home/irisowner/dev/data/replay/decisions"
+    for p in [os.environ.get("DEV_HOME", ""), "/home/irisowner/dev", "/irisdev/app"]:
+        if p:
+            py_dir = os.path.join(p, "python")
+            if os.path.isdir(py_dir) and py_dir not in sys.path:
+                sys.path.insert(0, py_dir)
+            r_dir = os.path.join(p, "data", "replay", "decisions")
+            if os.path.isdir(r_dir):
+                replay_dir = r_dir
     from vigil.agent_adapter import decide
 
     payload = json.loads(payloadJson) if payloadJson else {}
     api_key = os.environ.get("GEMINI_API_KEY", "")
-    replay_dir = "/home/irisowner/dev/data/replay/decisions"
 
     res = decide(payload=payload, mode=mode, api_key=api_key, replay_dir=replay_dir)
     return json.dumps(res)

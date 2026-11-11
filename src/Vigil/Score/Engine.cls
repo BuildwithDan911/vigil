@@ -6,9 +6,14 @@ Class Vigil.Score.Engine Extends %RegisteredObject
 ClassMethod ScoreObservations(obsJson As %String, dischargeIso As %String, resultIso As %String, age As %Integer, livesAlone As %Boolean, owner As %String = "dr.okonkwo") As %String [ Language = python ]
 {
     import json
+    import os
     from datetime import datetime
     import sys
-    sys.path.append("/home/irisowner/dev/python")
+
+    for p in [os.environ.get("DEV_HOME", ""), "/home/irisowner/dev", "/irisdev/app"]:
+        py_dir = os.path.join(p, "python") if p else ""
+        if py_dir and os.path.isdir(py_dir) and py_dir not in sys.path:
+            sys.path.insert(0, py_dir)
     from vigil.risk_score import calculate_risk
 
     obs = json.loads(obsJson) if obsJson else []
