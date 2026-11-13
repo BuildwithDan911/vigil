@@ -436,6 +436,8 @@ function checkHealth() {
       }
       fetchLoops();
       fetchLedger();
+      loadNightShiftEventCount();
+      loadConsentQueue();
     })
     .catch(() => {
       console.log('Running in client-side demonstration mode.');
