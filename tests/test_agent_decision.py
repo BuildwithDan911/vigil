@@ -65,6 +65,9 @@ def run_agent_tests():
     assert "Live model unavailable" in (res_live_bad.get("fallback_reason") or "")
     assert "not-a-real-key" not in (res_live_bad.get("fallback_reason") or "")
     assert "not-a-real-key" not in (res_live_bad["decision"].get("reason") or "")
+    assert "urlopen" not in (res_live_bad.get("fallback_reason") or "").lower()
+    assert "API key not valid" not in (res_live_bad.get("fallback_reason") or "")
+    assert "Traceback" not in (res_live_bad.get("fallback_reason") or "")
     assert "Safety floor held" in res_live_bad["decision"]["reason"] or "safety" in res_live_bad["decision"]["reason"].lower() or res_live_bad["decision"]["urgency"] == "critical"
     print("[PASS] Live mode with a dummy key falls back to the safety floor without crashing or leaking the key")
 

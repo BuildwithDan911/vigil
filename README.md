@@ -46,9 +46,9 @@ This is not an edge case; it is a recognized systemic crisis in hospital medicin
 ### What Vigil Does Differently
 **Vigil for IRIS for Health** transforms passive inbox alerts into an **autonomous, governed, closed-loop safety net**:
 1. **Intercepts Diagnostic Handoffs in Real Time**: Ingests HL7 `ORU^R01` (lab findings), `ADT^A03` (discharges), and specialty referrals through native InterSystems Business Services.
-2. **Governed AI Hub Decisioning**: Leverages an InterSystems IRIS AI Hub agent backed by a hard **Deterministic Clinical Safety Floor**—the model reasons over context, while the safety floor makes critical downgrades mathematically impossible.
+2. **Governed Decisioning with a Safety Floor**: Uses recorded replay (default) or an optional live Gemini call, always backed by a hard **Deterministic Clinical Safety Floor**. The model may reason over context, but the safety floor makes critical downgrades mathematically impossible.
 3. **Active Escalation Ladders**: Rather than leaving alerts in an inbox, Vigil assigns an on-duty clinician (e.g., Dr. Mensah), initiates active countdown timers (SLA: 2h for critical, 8h for urgent), and automatically escalates to Department Heads if unacknowledged.
-4. **Independent Java PEX Audit**: Re-audits abnormality flags via an independent Java Production Extension.
+4. **Independent Java PEX Audit (included, not wired)**: An independent Java Production Extension can re-audit abnormality flags. The class and unit tests are in the repo; it is not started as a production item in this release.
 5. **Cryptographic Proof on an Immutable Ledger**: Every observation, AI rationale, physician handoff, and timer escalation is cryptographically sealed onto a SHA-256 hash-chained audit ledger.
 
 ---
@@ -156,11 +156,12 @@ Vigil is not a surface-level wrapper. It is natively architected inside **InterS
     │                   │               │               │                   │
     ▼                   ▼               ▼               ▼                   ▼
 [Vigil.Score.Engine] [Vigil.BO.PEX]  [Vigil.BO.Decide] [EnsLib.Workflow]  [Vigil.Ledger]
- (Embedded Python)   (Java PEX Ops)  (%AI.Provider)    (Task Queue)       (SHA-256 Chain)
+ (Embedded Python)   (Java, unwired) (Python Gemini    (Task Queue)       (SHA-256 Chain)
+        │                   │         / replay)        │                   │
         │                   │               │               │                   │
-  Deterministic        Independent       Governed       Dispatches to      Immutable
-  Clinical Safety      Abnormality     AI Hub Agent    On-Duty Clinicians  Audit Trail
-   Floor Bound          OBX Audit     w/ Replay Fallback (VigilApprovers)  Tamper-Sealed
+  Deterministic        Included but      Governed       Dispatches to      Immutable
+  Clinical Safety      not started in    decision +     On-Duty Clinicians  Audit Trail
+   Floor Bound         Production        safety floor    (VigilApprovers)  Tamper-Sealed
         │                   │               │               │                   │
         └───────────────────┴───────────────┼───────────────┴───────────────────┘
                                             │
@@ -227,7 +228,7 @@ Evaluating AI contest submissions can be frustrating when projects require third
 - Vigil ships with **118 authentic synthetic events** spanning 40 patients over a 24-hour night shift.
 - In `VIGIL_MODE=replay` (default), all model rationales, bilingual callback scripts, and routing decisions run from verified high-fidelity embeddings and fixture caches.
 - **Zero cost, zero API keys, zero network lag, and zero external failure modes.**
-- Optional live mode (not required for judging the demos): copy `.env.example` to `.env` in the repository root, set `VIGIL_MODE=live`, and paste your Google Gemini key into `GEMINI_API_KEY` (do not commit `.env`). The default model is `gemini-3.5-flash-lite`. If the key is missing or the live call fails, Vigil falls back to the safety floor and does not crash the board.
+- Optional live mode (not required for judging the demos): copy `.env.example` to `.env` in the repository root (the same folder as `docker-compose.yml`). Set `VIGIL_MODE=live` and paste your Google Gemini key into `GEMINI_API_KEY` (that variable is on line 10 of `.env.example`; do not commit `.env`). The default model is `gemini-3.5-flash-lite`, which is a current Gemini API model as of November 2026. If the key is missing or the live call fails, Vigil falls back to the safety floor and does not crash the board.
 
 ---
 

@@ -49,6 +49,32 @@ def _sanitize_error(message: str, api_key: Optional[str] = None) -> str:
     text = re.sub(r"AIza[0-9A-Za-z_\-]{8,}", "[redacted]", text)
     return text[:300]
 
+
+def _classify_live_error(exc: BaseException, api_key: Optional[str] = None) -> str:
+    """Short, non-sensitive label for logs and API telemetry. Never include raw bodies."""
+    text = _sanitize_error(str(exc), api_key).lower()
+    if any(s in text for s in ("api key not valid", "api_key_invalid", "http 401", "http 403", "permission denied")):
+        return "API key rejected"
+    if "http 400" in text and "key" in text:
+        return "API key rejected"
+    if any(s in text for s in ("timed out", "timeout")):
+        return "timeout"
+    if any(
+        s in text
+        for s in (
+            "name resolution",
+            "temporary failure",
+            "urlopen",
+            "errno",
+            "network is unreachable",
+            "connection refused",
+            "connection reset",
+        )
+    ):
+        return "network or DNS"
+    return "provider error"
+
+
 def _extract_json_object(raw_text: str) -> Dict[str, Any]:
     text = (raw_text or "").strip()
     if text.startswith("```"):
@@ -189,7 +215,7 @@ def decide(
             tokens_in = 450
             tokens_out = 110
         except Exception as exc:
-            fallback_reason = f"Live model unavailable; safety floor applied ({_sanitize_error(str(exc), key)})"
+            fallback_reason = f"Live model unavailable; safety floor applied ({_classify_live_error(exc, key)})"
             used_model = "recorded-replay"
             decision_data = _rule_decision(payload, recommended_owner, final_level)
             if replay_dir and accession:
