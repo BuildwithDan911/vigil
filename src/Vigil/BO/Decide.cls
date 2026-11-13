@@ -60,6 +60,8 @@ ClassMethod ExecuteDecision(payloadJson As %String, mode As %String) As %String 
 
     payload = json.loads(payloadJson) if payloadJson else {}
     api_key = os.environ.get("GEMINI_API_KEY", "")
+    if not mode:
+        mode = os.environ.get("VIGIL_MODE", "replay")
 
     res = decide(payload=payload, mode=mode, api_key=api_key, replay_dir=replay_dir)
     return json.dumps(res)

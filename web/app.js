@@ -371,6 +371,60 @@ function toggleEnvironment() {
   setEnvironment(VigilState.environment === 'demo' ? 'live' : 'demo');
 }
 
+function loadNightShiftEventCount() {
+  fetch('/vigil/api/demo/nightshift')
+    .then(r => r.json())
+    .then(data => {
+      const el = document.getElementById('nightShiftEventCount');
+      if (!el || !data) return;
+      const total = data.eventsReplayed || 0;
+      const adt = data.adtCount || 0;
+      const oru = data.oruCount || 0;
+      const ref = data.referralCount || 0;
+      el.textContent = `${total} seeded events replayed (${adt} admissions/discharges, ${oru} lab results, ${ref} referrals).`;
+    })
+    .catch(() => {
+      const el = document.getElementById('nightShiftEventCount');
+      if (el) el.textContent = 'Seeded 24-hour replay (event count unavailable until IRIS is connected).';
+    });
+}
+
+function loadConsentQueue() {
+  const body = document.getElementById('consentQueueBody');
+  if (!body) return;
+  fetch('/vigil/api/consent/queue')
+    .then(r => r.json())
+    .then(rows => {
+      if (!Array.isArray(rows) || rows.length === 0) return;
+      body.innerHTML = rows.map(item => {
+        const isHold = (item.rule || '') === 'hold';
+        const ruleLabel = isHold ? 'SMS Blocked' : 'Diagnosis Hidden';
+        const ruleClass = isHold ? 'acuity-critical' : 'acuity-urgent';
+        const action = isHold ? 'Keep Hold' : 'Approve Message';
+        const id = item.loopId || item.patientId;
+        const outbound = item.outboundMessage || '';
+        return `<tr>
+              <td><strong>${item.patientName || item.patientId}</strong></td>
+              <td><span class="acuity-badge" style="background:#F1F5F9; color:#475569;">${item.testName || 'Sensitive result'}</span></td>
+              <td><span class="acuity-badge ${ruleClass}">${ruleLabel}</span></td>
+              <td style="color: var(--text-secondary);">${outbound}</td>
+              <td><button class="btn btn-outline" style="padding: 3px 8px; font-size: 11px;" onclick="resolveConsentItem('${id}', '${action}')">${action}</button></td>
+            </tr>`;
+      }).join('');
+    })
+    .catch(() => {});
+}
+
+function resolveConsentItem(id, action) {
+  fetch(`/vigil/api/consent/${encodeURIComponent(id)}/resolve`, { method: 'POST' })
+    .then(r => r.json())
+    .then(() => {
+      showToast('Consent review updated', `${action} recorded for ${id}.`, action.indexOf('Hold') >= 0 ? 'warning' : 'success');
+      loadConsentQueue();
+    })
+    .catch(() => showToast('Consent review', 'Could not update this item. The local list is unchanged.', 'warning'));
+}
+
 // REST Health Check & Live IRIS Sync
 function checkHealth() {
   fetch('/vigil/api/health')
@@ -1107,6 +1161,15 @@ function toggleNightShiftPlay() {
   } else {
     VigilState.simPlaying = true;
     if (playBtn) playBtn.textContent = '❚❚ Pause Simulation';
+    fetch('/vigil/api/demo/nightshift', { method: 'POST' })
+      .then(r => r.json())
+      .then(data => {
+        const el = document.getElementById('nightShiftEventCount');
+        if (el && data && data.eventsReplayed) {
+          el.textContent = `${data.eventsReplayed} seeded events replayed (${data.adtCount || 0} admissions/discharges, ${data.oruCount || 0} lab results, ${data.referralCount || 0} referrals).`;
+        }
+      })
+      .catch(() => {});
     runNightShiftLoop();
   }
 }

@@ -58,6 +58,24 @@ def run_agent_tests():
     assert res_adv["decision"]["urgency"] == "critical", f"Adversarial downgrade was not blocked! Got: {res_adv['decision']['urgency']}"
     print("[PASS] Adversarial downgrade below safety floor is strictly blocked")
 
+    # 5. Live mode with a dummy key must not crash and must keep the safety floor
+    res_live_bad = decide(p01_payload, mode="live", api_key="not-a-real-key", replay_dir=replay_dir)
+    assert res_live_bad["decision"]["urgency"] == "critical"
+    assert res_live_bad["mode"] == "replay"
+    assert "Live model unavailable" in (res_live_bad.get("fallback_reason") or "")
+    assert "not-a-real-key" not in (res_live_bad.get("fallback_reason") or "")
+    assert "not-a-real-key" not in (res_live_bad["decision"].get("reason") or "")
+    assert "Safety floor held" in res_live_bad["decision"]["reason"] or "safety" in res_live_bad["decision"]["reason"].lower() or res_live_bad["decision"]["urgency"] == "critical"
+    print("[PASS] Live mode with a dummy key falls back to the safety floor without crashing or leaking the key")
+
+    # 6. Live mode with an empty or placeholder key uses replay (does not attempt a network call)
+    res_live_empty = decide(p01_payload, mode="live", api_key="", replay_dir=replay_dir)
+    assert res_live_empty["mode"] == "replay"
+    assert res_live_empty["decision"]["urgency"] == "critical"
+    res_live_placeholder = decide(p01_payload, mode="live", api_key="AIzaSy...", replay_dir=replay_dir)
+    assert res_live_placeholder["mode"] == "replay"
+    print("[PASS] Live mode with an empty or placeholder key stays on replay")
+
     print("=== ALL PHASE 5 AGENT DECISION & TRACE TESTS PASSED CLEANLY ===")
 
 if __name__ == "__main__":

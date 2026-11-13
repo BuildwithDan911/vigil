@@ -121,6 +121,36 @@ Method OnRequest(pRequest As Ens.StringRequest, Output pResponse As Ens.StringRe
         Set rem = sec # 86400
         Set loop.Deadline = $ZDateTime(day _ "," _ rem, 3)
         
+        // Optional governed decision (replay by default; live Gemini if VIGIL_MODE=live).
+        // Failures fall back to the safety floor and must never block loop creation.
+        Try {
+            Set mode = $SYSTEM.Util.GetEnviron("VIGIL_MODE")
+            If mode = "" Set mode = "replay"
+            Set decidePayload = {
+                "result": {"accession": (token1), "flag": (scoreObj.%Get("max_flag")), "days_since_discharge": (loop.DaysSinceDischarge)},
+                "score": {"score": (loop.Score), "floor_level": (loop.FloorLevel), "final_level": (loop.Urgency)},
+                "roster": {"backup": (loop.Owner)}
+            }
+            Set decideJson = ##class(Vigil.BO.Decide).ExecuteDecision(decidePayload.%ToJSON(), mode)
+            If decideJson '= "" {
+                Set decideObj = {}.%FromJSON(decideJson)
+                Set dec = decideObj.%Get("decision")
+                If $IsObject(dec) {
+                    If dec.%Get("reason") '= "" Set loop.AgentReason = dec.%Get("reason")
+                    If dec.%Get("call_script") '= "" Set loop.CallScript = dec.%Get("call_script")
+                    If dec.%Get("sms_draft") '= "" Set loop.SmsDraft = dec.%Get("sms_draft")
+                    If dec.%Get("urgency") '= "" Set loop.Urgency = dec.%Get("urgency")
+                    If dec.%Get("consent_recommendation") '= "" Set loop.ConsentStatus = dec.%Get("consent_recommendation")
+                }
+                If (decideObj.%Get("fallback_reason") = "") && (decideObj.%Get("mode") = "live") {
+                    Set loop.DecisionSource = "clinical_ai"
+                } Else {
+                    Set loop.DecisionSource = "rules_floor"
+                }
+            }
+        } Catch exDecide {
+        }
+
         // Save Loop
         Set sc = loop.%Save()
         Set pResponse.StringValue = "OPENED:" _ loop.LoopId

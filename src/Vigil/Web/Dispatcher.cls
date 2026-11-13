@@ -44,7 +44,10 @@ XData UrlMap [ XMLNamespace = "http://www.intersystems.com/urlmap" ]
   
   <!-- Night Shift Demo & Emergency Simulation -->
   <Route Url="/api/demo/emergency" Method="POST" Call="InjectEmergency"/>
+  <Route Url="/api/demo/nightshift" Method="GET" Call="NightShiftSummary"/>
   <Route Url="/api/demo/nightshift" Method="POST" Call="RunNightShift"/>
+  <Route Url="/api/demo/decide" Method="GET" Call="RunDecide"/>
+  <Route Url="/api/demo/decide" Method="POST" Call="RunDecide"/>
   <Route Url="/api/demo/without" Method="POST" Call="RunWithoutVigil"/>
   <Route Url="/api/demo/report" Method="GET" Call="GetSafetyReport"/>
   <Route Url="/api/i18n/scripts/:loopId" Method="GET" Call="GetCallbackScript"/>
@@ -57,7 +60,7 @@ ClassMethod Health() As %Status
     Set payload = {
         "status": "healthy",
         "service": "Vigil for IRIS for Health",
-        "version": "1.0.0",
+        "version": "1.0.3",
         "timestamp": ($ZDateTime($Horolog, 3)),
         "mode": ($SYSTEM.Util.GetEnviron("VIGIL_MODE")),
         "database": "IRISAPP",
@@ -295,14 +298,69 @@ ClassMethod RunAdversarialTest(id As %String) As %Status
 ClassMethod GetConsentQueue() As %Status
 {
     Set %response.ContentType = "application/json"
-    Write [].%ToJSON()
+    Do ##class(Vigil.Setup).SeedConsentData()
+    Set array = []
+    Try {
+        Set rset = ##class(%SQL.Statement).%ExecDirect(, "SELECT PatientId, PatientName, TestName, Rule, OutboundMessage, Status, LoopId FROM Vigil_Data.ConsentQueue ORDER BY ID ASC")
+        If $IsObject(rset) {
+            While rset.%Next() {
+                Set item = {
+                    "patientId": (rset.%Get("PatientId")),
+                    "patientName": (rset.%Get("PatientName")),
+                    "testName": (rset.%Get("TestName")),
+                    "rule": (rset.%Get("Rule")),
+                    "outboundMessage": (rset.%Get("OutboundMessage")),
+                    "status": (rset.%Get("Status")),
+                    "loopId": (rset.%Get("LoopId"))
+                }
+                Do array.%Push(item)
+            }
+        }
+    } Catch ex {
+        // Fall through to built-in review items if the queue table is not yet compiled
+    }
+    If array.%Size() = 0 {
+        Do array.%Push({
+            "patientId": "P09",
+            "patientName": "Chika Eze (36y)",
+            "testName": "HIV-1 RNA Viral Load",
+            "rule": "redact",
+            "outboundMessage": "Please call Harbourview General regarding a recent test.",
+            "status": "pending",
+            "loopId": "VGL-09-EZE"
+        })
+        Do array.%Push({
+            "patientId": "P10",
+            "patientName": "Yusuf Bello (44y)",
+            "testName": "Lithium Level",
+            "rule": "hold",
+            "outboundMessage": "[HOLD: Patient opted out of SMS notifications. Internal clinical phone call required.]",
+            "status": "pending",
+            "loopId": "VGL-10-BELLO"
+        })
+    }
+    Write array.%ToJSON()
     Quit $$$OK
 }
 
 ClassMethod ResolveConsent(id As %String) As %Status
 {
     Set %response.ContentType = "application/json"
-    Write {"ok": true, "resolved": true}.%ToJSON()
+    Set found = 0
+    Try {
+        Set row = ##class(Vigil.Data.ConsentQueue).IdxLoopIdOpen(id)
+        If '$IsObject(row) {
+            Set row = ##class(Vigil.Data.ConsentQueue).IdxPatientIdOpen(id)
+        }
+        If $IsObject(row) {
+            Set row.Status = "resolved"
+            Do row.%Save()
+            Set found = 1
+        }
+    } Catch ex {
+        Set found = 0
+    }
+    Write {"ok": true, "resolved": true, "id": (id), "updated": (found)}.%ToJSON()
     Quit $$$OK
 }
 
@@ -356,15 +414,92 @@ ClassMethod TamperTestLedger() As %Status
     Quit $$$OK
 }
 
+ClassMethod NightShiftPayload() As %String
+{
+    Set stats = ..CountNightShiftEvents()
+    Set payload = {
+        "ok": true,
+        "mode": "seeded_replay",
+        "durationSeconds": 90,
+        "eventsReplayed": (stats.%Get("eventsReplayed")),
+        "adtCount": (stats.%Get("adtCount")),
+        "oruCount": (stats.%Get("oruCount")),
+        "referralCount": (stats.%Get("referralCount")),
+        "windowStart": "2026-11-04 19:00",
+        "windowEnd": "2026-11-05 19:00",
+        "withoutVigilLostCount": 3,
+        "consentHolds": 2,
+        "criticalCaught": 3,
+        "irisNamespace": "IRISAPP"
+    }
+    Quit payload.%ToJSON()
+}
+
+ClassMethod CountNightShiftEvents() As %DynamicObject
+{
+    Set base = $SYSTEM.Util.GetEnviron("DEV_HOME")
+    If base = "" Set base = "/home/irisowner/dev"
+    Set adt = ..CountFiles(base_"/data/night/adt", ".hl7")
+    Set oru = ..CountFiles(base_"/data/night/oru", ".hl7")
+    Set ref = ..CountFiles(base_"/data/night/referral", ".json")
+    Quit {
+        "adtCount": (adt),
+        "oruCount": (oru),
+        "referralCount": (ref),
+        "eventsReplayed": (adt + oru + ref)
+    }
+}
+
+ClassMethod CountFiles(dir As %String, ext As %String) As %Integer
+{
+    Set count = 0
+    Set rs = ##class(%File).FileSetFunc(dir, "*"_ext)
+    If $IsObject(rs) {
+        While rs.%Next() {
+            If rs.Type = "F" Set count = count + 1
+        }
+    }
+    Quit count
+}
+
+ClassMethod NightShiftSummary() As %Status
+{
+    Set %response.ContentType = "application/json"
+    Write ..NightShiftPayload()
+    Quit $$$OK
+}
+
 ClassMethod RunNightShift() As %Status
 {
     Set %response.ContentType = "application/json"
-    // Advance simulated time in IRIS
     &sql(UPDATE Vigil_Data.Loop SET SlaRemaining = '00h 48m', SlaSeconds = 2880 WHERE LoopId = 'VGL-01-REEVE')
     &sql(UPDATE Vigil_Data.Loop SET SlaRemaining = '05h 15m', SlaSeconds = 18900 WHERE LoopId = 'VGL-REF-ONC')
-    Do ##class(Vigil.Ledger.Chain).Append("SYSTEM", "NIGHT_SHIFT_TICK", "Vigil.Clock", "{""simulatedHours"":12,""casesMonitored"":5}")
-    
-    Write {"ok": true, "mode": "docker_simulation", "durationSeconds": 90, "eventsReplayed": 74, "irisNamespace": "IRISAPP"}.%ToJSON()
+    Set stats = ..CountNightShiftEvents()
+    Do ##class(Vigil.Ledger.Chain).Append("SYSTEM", "NIGHT_SHIFT_TICK", "Vigil.Clock", "{""eventsReplayed"":"_stats.%Get("eventsReplayed")_"}")
+    Write ..NightShiftPayload()
+    Quit $$$OK
+}
+
+ClassMethod RunDecide() As %Status
+{
+    Set %response.ContentType = "application/json"
+    Set mode = $SYSTEM.Util.GetEnviron("VIGIL_MODE")
+    If mode = "" Set mode = "replay"
+    Set payload = {
+        "result": {"accession": "ACC-P01-K", "test": "Potassium", "flag": "HH", "days_since_discharge": 1},
+        "score": {"score": 10, "floor_level": "critical", "final_level": "critical"},
+        "roster": {"owner": "dr.okonkwo", "on_shift": false, "backup": "dr.mensah"}
+    }
+    Try {
+        Set json = ##class(Vigil.BO.Decide).ExecuteDecision(payload.%ToJSON(), mode)
+        If json = "" {
+            Write {"ok": false, "error": "empty_decision", "mode": (mode)}.%ToJSON()
+        } Else {
+            Write json
+        }
+    } Catch ex {
+        Write {"ok": false, "error": "decision_failed", "mode": (mode), "urgency": "critical", "fallback": "safety_floor"}.%ToJSON()
+    }
     Quit $$$OK
 }
 

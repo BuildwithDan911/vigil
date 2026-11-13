@@ -41,6 +41,7 @@ ClassMethod Run() As %Status
         
         // 3. Seed demonstration clinical cases into IRIS storage
         Do ..SeedDemoData()
+        Do ..SeedConsentData()
         
         // 4. Start Production if not already running (ensures ZPM/IPM installs auto-start)
         If '##class(Ens.Director).IsProductionRunning() {
@@ -204,6 +205,54 @@ ClassMethod SeedDemoData() As %Status
 
     Write !, "  -> Seeded 5 demonstration loops and initial SHA-256 ledger blocks."
     Quit $$$OK
+}
+
+
+ClassMethod SeedConsentData() As %Status
+{
+    Set sc = $$$OK
+    Set count = 0
+    &sql(SELECT COUNT(*) INTO :count FROM Vigil_Data.ConsentQueue)
+    If count > 0 Quit $$$OK
+
+    Set c1 = ##class(Vigil.Data.ConsentQueue).%New()
+    Set c1.PatientId = "P09"
+    Set c1.LoopId = "VGL-09-EZE"
+    Set c1.PatientName = "Chika Eze (36y)"
+    Set c1.TestName = "HIV-1 RNA Viral Load"
+    Set c1.Rule = "redact"
+    Set c1.OutboundMessage = "Please call Harbourview General regarding a recent test."
+    Set c1.Status = "pending"
+    Do c1.%Save()
+
+    Set c2 = ##class(Vigil.Data.ConsentQueue).%New()
+    Set c2.PatientId = "P10"
+    Set c2.LoopId = "VGL-10-BELLO"
+    Set c2.PatientName = "Yusuf Bello (44y)"
+    Set c2.TestName = "Lithium Level"
+    Set c2.Rule = "hold"
+    Set c2.OutboundMessage = "[HOLD: Patient opted out of SMS notifications. Internal clinical phone call required.]"
+    Set c2.Status = "pending"
+    Do c2.%Save()
+
+    // Also store the underlying preference flags
+    If '$IsObject(##class(Vigil.Data.Consent).IdxPatientIdOpen("P09")) {
+        Set p1 = ##class(Vigil.Data.Consent).%New()
+        Set p1.PatientId = "P09"
+        Set p1.ShareResultsSMS = 1
+        Set p1.ShareSensitive = 0
+        Set p1.PreferredLanguage = "en"
+        Do p1.%Save()
+    }
+    If '$IsObject(##class(Vigil.Data.Consent).IdxPatientIdOpen("P10")) {
+        Set p2 = ##class(Vigil.Data.Consent).%New()
+        Set p2.PatientId = "P10"
+        Set p2.ShareResultsSMS = 0
+        Set p2.ShareSensitive = 1
+        Set p2.PreferredLanguage = "en"
+        Do p2.%Save()
+    }
+    Quit sc
 }
 
 ClassMethod HealthCheck() As %Status

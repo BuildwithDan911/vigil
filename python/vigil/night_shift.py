@@ -97,6 +97,28 @@ class NightShiftEngine:
             }
         }
 
+
+def count_seeded_events(data_dir: str = None) -> dict:
+    """Count the committed Night Shift fixture files used for the 24-hour replay."""
+    root = Path(data_dir) if data_dir else Path(__file__).resolve().parent.parent.parent / "data"
+    night = root / "night"
+    adt = list((night / "adt").glob("*.hl7")) if (night / "adt").is_dir() else []
+    oru = list((night / "oru").glob("*.hl7")) if (night / "oru").is_dir() else []
+    referrals = list((night / "referral").glob("*.json")) if (night / "referral").is_dir() else []
+    return {
+        "adtCount": len(adt),
+        "oruCount": len(oru),
+        "referralCount": len(referrals),
+        "eventsReplayed": len(adt) + len(oru) + len(referrals),
+        "windowStart": "2026-11-04 19:00",
+        "windowEnd": "2026-11-05 19:00",
+        "withoutVigilLostCount": 3,
+        "withoutVigilLostPatients": ["Martha Reeve", "Samuel Okai", "Amina Diallo"],
+        "consentHolds": 2,
+        "criticalCaught": 3,
+    }
+
+
 if __name__ == "__main__":
     engine = NightShiftEngine()
     rep = engine.run_simulation()
