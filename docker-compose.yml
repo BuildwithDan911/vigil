@@ -1,16 +1,26 @@
+# Vigil for IRIS for Health
+#
+# `docker compose up -d` is designed to work without a private image or an API key.
+# The default image is the public InterSystems IRIS for Health Community build.
+# All judge demos run in VIGIL_MODE=replay (no Gemini key, no AI Hub EAP tarball).
+#
+# If you have already loaded the official InterSystems AI Hub EAP image, start with:
+#   IMAGE=irishealth-community:2027.1.0AI.109.0 docker compose up -d
+
 services:
   vigil:
-    image: ${IMAGE:-irishealth-community:2027.1.0AI.109.0}
+    image: ${IMAGE:-intersystemsdc/irishealth-community:latest}
     container_name: vigil-iris
     restart: unless-stopped
     ports:
       - "${IRIS_SUPERSERVER_PORT:-1972}:1972"
       - "${IRIS_WEB_PORT:-52773}:52773"
+      - "8000:8000"
     environment:
       - ISC_CPF_MERGE_FILE=/home/irisowner/dev/merge.cpf
       - VIGIL_MODE=${VIGIL_MODE:-replay}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.5-flash-lite}
     volumes:
       - ./:/home/irisowner/dev
     command: ["-a", "iris session IRIS < /home/irisowner/dev/iris.script"]
@@ -20,3 +30,17 @@ services:
       timeout: 5s
       retries: 5
       start_period: 25s
+
+  web:
+    image: python:3.12-slim
+    container_name: vigil-web
+    restart: unless-stopped
+    network_mode: "service:vigil"
+    environment:
+      - IRIS_BASE=http://127.0.0.1:52773
+    volumes:
+      - ./web:/app
+    working_dir: /app
+    command: ["python", "server.py"]
+    depends_on:
+      - vigil

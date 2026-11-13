@@ -9,7 +9,7 @@ import urllib.error
 import sys
 import os
 
-IRIS_BASE = "http://127.0.0.1:52773"
+IRIS_BASE = os.environ.get("IRIS_BASE", "http://127.0.0.1:52773").rstrip("/")
 
 class VigilProxyHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):

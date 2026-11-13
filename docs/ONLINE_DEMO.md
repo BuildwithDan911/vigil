@@ -22,9 +22,12 @@ This guide documents how to host **Vigil for IRIS for Health** on a public cloud
 
 ## 2. Image Deployment & Loading
 
-Because the InterSystems AI Hub image is available exclusively under the Early Access Program (EAP) and **must never be pushed to public Docker registries**, transfer the image directly to your VM:
+The default `docker compose up -d` path pulls the public InterSystems IRIS for Health Community image and runs in replay mode. No private tarball and no API key are required for a public demo.
+
+The official InterSystems AI Hub EAP image is available exclusively under the Early Access Program and **must never be pushed to public Docker registries**. Only do the steps below if you want live AI Hub calls and already have the tarball:
 
 ```bash
+# Optional EAP path only:
 # 1. SCP the EAP tarball to your cloud VM
 scp irishealth-community-2027.1.0AI.109.0-docker.tar.gz user@<YOUR_VM_IP>:/home/ubuntu/
 
@@ -51,8 +54,11 @@ cd vigil
 cp .env.example .env
 # Edit .env with nano if using GEMINI_API_KEY
 
-# Start the stack
-docker compose up -d --build
+# Start the stack (replay mode, public Community image)
+docker compose up -d
+
+# Or, if you loaded the EAP image:
+# IMAGE=irishealth-community:2027.1.0AI.109.0 docker compose up -d
 ```
 
 ---
@@ -63,7 +69,7 @@ Once containers report healthy:
 
 | Interface | URL | Credentials | Purpose |
 |---|---|---|---|
-| **Vigil Ward Board (Clinical UI)** | `http://<YOUR_VM_IP>:52773/vigil/` | None (Public Demo) | Real-time triage, Night Shift player, Adversarial test, Consent queue, SHA-256 Ledger explorer. |
+| **Vigil Ward Board (Clinical UI)** | `http://<YOUR_VM_IP>:52773/vigil/` or `http://<YOUR_VM_IP>:8000/` | None (Public Demo) | Real-time triage, Night Shift player, Adversarial test, Consent queue, SHA-256 Ledger explorer. |
 | **InterSystems Management Portal** | `http://<YOUR_VM_IP>:52773/csp/sys/UtilHome.csp` | `_SYSTEM` / `SYS` | System administration and global inspections. |
 | **InterSystems Workflow Inbox** | `http://<YOUR_VM_IP>:52773/csp/irisapp/EnsLib.Workflow.Form.Worklist.zen` | `dr.mensah` / `SYS` | Native TaskRequest queue for critical post-discharge escalations. |
 | **InterSystems Visual Trace** | `http://<YOUR_VM_IP>:52773/csp/irisapp/EnsPortal.VisualTrace.zen` | `_SYSTEM` / `SYS` | Visual Trace showing DPI-I-689 agent decision telemetry and PEX auditing. |
