@@ -23,24 +23,10 @@ services:
       - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.5-flash-lite}
     volumes:
       - ./:/home/irisowner/dev
-    command: ["-a", "iris session IRIS < /home/irisowner/dev/iris.script"]
+    command: ["-a", "bash /home/irisowner/dev/scripts/after-start.sh"]
     healthcheck:
       test: ["CMD-SHELL", "iris session IRIS -U IRISAPP '##class(Vigil.Setup).HealthCheck()' || exit 0"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 25s
-
-  web:
-    image: python:3.12-slim
-    container_name: vigil-web
-    restart: unless-stopped
-    network_mode: "service:vigil"
-    environment:
-      - IRIS_BASE=http://127.0.0.1:52773
-    volumes:
-      - ./web:/app
-    working_dir: /app
-    command: ["python", "server.py"]
-    depends_on:
-      - vigil
